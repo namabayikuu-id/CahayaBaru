@@ -1729,114 +1729,9 @@ footer {
 
 <script>
 // =============================================
-//  PRODUCTS JSON DATA
+//  PRODUCTS — dimuat dari products.json
 // =============================================
-const products = [
-  // --- SEMBAKO: Minyak Goreng ---
-  {
-    id: 1, nama: "Minyak Goreng Bimoli 2L",
-    foto: "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=500&q=80",
-    deskripsi: "Minyak goreng premium dengan kandungan vitamin A & E, cocok untuk memasak sehari-hari. Jernih, tidak berbau, dan tahan lama.",
-    harga_satuan: 32000, harga_grosir: 28000, grosir_min: "12 botol",
-    kategori: "sembako", subkategori: "minyak-goreng"
-  },
-  {
-    id: 2, nama: "Minyak Goreng Fortune 1L",
-    foto: "https://images.unsplash.com/photo-1615485290382-441e4d049cb5?w=500&q=80",
-    deskripsi: "Minyak goreng serbaguna hasil olahan sawit pilihan. Cocok untuk menggoreng, menumis, dan memanggang.",
-    harga_satuan: 17500, harga_grosir: 15000, grosir_min: "24 botol",
-    kategori: "sembako", subkategori: "minyak-goreng"
-  },
-  // --- SEMBAKO: Sabun ---
-  {
-    id: 3, nama: "Sabun Lifebuoy 100g",
-    foto: "https://images.unsplash.com/photo-1607006344380-b6775a0824a7?w=500&q=80",
-    deskripsi: "Sabun mandi antibakteri dengan formula perlindungan 10 jam. Menjaga kulit tetap bersih dan segar sepanjang hari.",
-    harga_satuan: 4500, harga_grosir: 3800, grosir_min: "48 pcs",
-    kategori: "sembako", subkategori: "sabun"
-  },
-  {
-    id: 4, nama: "Sabun Cuci Sunlight Refill 750ml",
-    foto: "https://images.unsplash.com/photo-1583947215259-38e31be8751f?w=500&q=80",
-    deskripsi: "Sabun cuci piring dengan formula lemon aktif. Mengangkat lemak dan kuman secara efektif, hemat dan ekonomis.",
-    harga_satuan: 8500, harga_grosir: 7200, grosir_min: "36 pcs",
-    kategori: "sembako", subkategori: "sabun"
-  },
-  // --- SEMBAKO: Bumbu ---
-  {
-    id: 5, nama: "Bumbu Nasi Goreng Indofood",
-    foto: "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=500&q=80",
-    deskripsi: "Bumbu nasi goreng siap pakai dengan cita rasa otentik. Praktis, lezat, dan cocok untuk seluruh keluarga.",
-    harga_satuan: 3500, harga_grosir: 2900, grosir_min: "60 sachet",
-    kategori: "sembako", subkategori: "bumbu"
-  },
-  {
-    id: 6, nama: "Kecap Manis ABC 275ml",
-    foto: "https://images.unsplash.com/photo-1559181567-c3190ca9959b?w=500&q=80",
-    deskripsi: "Kecap manis kental pilihan chef Indonesia. Kaya rasa, warna cokelat kehitaman, sempurna untuk marinasi dan saus.",
-    harga_satuan: 11000, harga_grosir: 9500, grosir_min: "24 botol",
-    kategori: "sembako", subkategori: "bumbu"
-  },
-  {
-    id: 7, nama: "Garam Dapur Refina 500g",
-    foto: "https://images.unsplash.com/photo-1518110925495-5fe2fda0442c?w=500&q=80",
-    deskripsi: "Garam beryodium berkualitas tinggi untuk masakan dan konsumsi harian. Bersih, butiran halus, dan beryodium cukup.",
-    harga_satuan: 4000, harga_grosir: 3200, grosir_min: "50 bungkus",
-    kategori: "sembako", subkategori: "bumbu"
-  },
-  // --- PERABOTAN: Dapur ---
-  {
-    id: 8, nama: "Panci Teflon Anti Lengket 22cm",
-    foto: "https://images.unsplash.com/photo-1584990347449-39ce6d2b7f9e?w=500&q=80",
-    deskripsi: "Panci dengan lapisan teflon premium yang anti lengket dan mudah dibersihkan. Cocok untuk berbagai jenis kompor.",
-    harga_satuan: 85000, harga_grosir: 72000, grosir_min: "6 pcs",
-    kategori: "perabotan", subkategori: "dapur"
-  },
-  {
-    id: 9, nama: "Spatula Stainless Steel Set 3pcs",
-    foto: "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=500&q=80",
-    deskripsi: "Set spatula dari bahan stainless steel food-grade yang kuat dan tahan karat. Cocok untuk dapur modern maupun tradisional.",
-    harga_satuan: 35000, harga_grosir: 29000, grosir_min: "12 set",
-    kategori: "perabotan", subkategori: "dapur"
-  },
-  {
-    id: 10, nama: "Tempat Bumbu 6in1",
-    foto: "https://images.unsplash.com/photo-1556909172-54557c7e4fb7?w=500&q=80",
-    deskripsi: "Set tempat bumbu dengan 6 wadah kaca bening dan rak putar. Praktis, estetik, dan menghemat ruang dapur.",
-    harga_satuan: 55000, harga_grosir: 47000, grosir_min: "10 set",
-    kategori: "perabotan", subkategori: "dapur"
-  },
-  // --- PERABOTAN: Kebersihan ---
-  {
-    id: 11, nama: "Sapu Lantai Bulu Halus",
-    foto: "https://images.unsplash.com/photo-1563453392212-326f5e854473?w=500&q=80",
-    deskripsi: "Sapu bulu halus yang efektif menyapu debu halus di berbagai jenis lantai. Gagang kuat dan ergonomis.",
-    harga_satuan: 28000, harga_grosir: 23000, grosir_min: "20 pcs",
-    kategori: "perabotan", subkategori: "kebersihan"
-  },
-  {
-    id: 12, nama: "Ember Plastik 20L",
-    foto: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=500&q=80",
-    deskripsi: "Ember serbaguna kapasitas 20 liter terbuat dari plastik tebal berkualitas. Tahan benturan dan awet digunakan sehari-hari.",
-    harga_satuan: 22000, harga_grosir: 18000, grosir_min: "24 pcs",
-    kategori: "perabotan", subkategori: "kebersihan"
-  },
-  // --- PERABOTAN: Keluarga ---
-  {
-    id: 13, nama: "Rak Sepatu 4 Susun",
-    foto: "https://images.unsplash.com/photo-1558997519-83ea9252eeb8?w=500&q=80",
-    deskripsi: "Rak sepatu minimalis dengan 4 susun, terbuat dari besi berlapis anti karat. Mudah dirakit dan hemat tempat.",
-    harga_satuan: 120000, harga_grosir: 100000, grosir_min: "5 pcs",
-    kategori: "perabotan", subkategori: "keluarga"
-  },
-  {
-    id: 14, nama: "Bantal Tidur Premium Dacron",
-    foto: "https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=500&q=80",
-    deskripsi: "Bantal tidur isi dacron berkualitas tinggi yang lembut dan nyaman. Sarung bantal bahan katun, mudah dicuci.",
-    harga_satuan: 45000, harga_grosir: 38000, grosir_min: "12 pcs",
-    kategori: "perabotan", subkategori: "keluarga"
-  },
-];
+let products = [];
 
 // =============================================
 //  STATE
@@ -2245,7 +2140,17 @@ function sendOrderWA() {
 // =============================================
 //  INIT
 // =============================================
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
+  try {
+    const res = await fetch('products.json');
+    if (!res.ok) throw new Error('Gagal memuat products.json');
+    products = await res.json();
+  } catch (err) {
+    console.error('Error loading products:', err);
+    document.getElementById('productGrid').innerHTML =
+      '<p style="color:red;text-align:center;grid-column:1/-1">Gagal memuat data produk. Pastikan file products.json tersedia.</p>';
+    return;
+  }
   renderSubcats();
   renderProducts();
   setupSearch();
