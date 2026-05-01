@@ -1,11 +1,11 @@
 [
   {
     "id": 1,
-    "nama": "Minyak Goreng Bimoli 2L",
+    "nama": "Minyak Goreng Minyak Kita 1L",
     "foto": "https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=500&q=80",
     "deskripsi": "Minyak goreng premium dengan kandungan vitamin A & E, cocok untuk memasak sehari-hari. Jernih, tidak berbau, dan tahan lama.",
-    "harga_satuan": 32000,
-    "harga_grosir": 28000,
+    "harga_satuan": 21000,
+    "harga_grosir": 20000,
     "grosir_min": "12 botol",
     "kategori": "sembako",
     "subkategori": "minyak-goreng"
