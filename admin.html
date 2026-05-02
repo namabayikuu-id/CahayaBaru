@@ -1921,7 +1921,7 @@ function closeSettings() {
   document.getElementById('settingsModal').classList.remove('open');
 }
 
-function saveSettings() {
+async function saveSettings() {
   setSetting('ghOwner', document.getElementById('ghOwner').value.trim());
   setSetting('ghRepo', document.getElementById('ghRepo').value.trim());
   setSetting('ghBranch', document.getElementById('ghBranch').value.trim() || 'main');
@@ -1937,8 +1937,71 @@ function saveSettings() {
   }
 
   closeSettings();
-  showToast('Settings tersimpan! Memuat data...', 'success');
+  showToast('Settings tersimpan! Menyimpan credential.json ke GitHub...', 'success');
+  await pushCredentialToGitHub();
   loadFromGitHub(false);
+}
+
+async function pushCredentialToGitHub() {
+  const cfg = getGhConfig();
+  if (!cfg.owner || !cfg.repo || !cfg.token) return;
+
+  const cred = {
+    _info: "File credential Admin Panel Cahaya Baru — repo ini private, jangan dipublikasikan!",
+    _updated: new Date().toISOString(),
+    ghOwner:       cfg.owner,
+    ghRepo:        cfg.repo,
+    ghBranch:      cfg.branch,
+    ghFilePath:    cfg.filePath,
+    ghToken:       cfg.token,
+    ghImageFolder: cfg.imageFolder,
+    adminUser:     getSetting('adminUser', 'admin'),
+    adminPass:     getSetting('adminPass', 'admin123'),
+  };
+
+  const content = btoa(unescape(encodeURIComponent(JSON.stringify(cred, null, 2))));
+  const apiUrl  = `https://api.github.com/repos/${cfg.owner}/${cfg.repo}/contents/credential.json`;
+
+  try {
+    // Cek apakah file sudah ada (untuk dapat SHA-nya)
+    let sha = null;
+    const getRes = await fetch(`${apiUrl}?ref=${cfg.branch}`, {
+      headers: {
+        'Authorization': `token ${cfg.token}`,
+        'Accept': 'application/vnd.github.v3+json'
+      }
+    });
+    if (getRes.ok) {
+      const existing = await getRes.json();
+      sha = existing.sha;
+    }
+
+    const body = {
+      message: `Update credential.json — ${new Date().toLocaleString('id-ID')}`,
+      content,
+      branch: cfg.branch,
+    };
+    if (sha) body.sha = sha;
+
+    const putRes = await fetch(apiUrl, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `token ${cfg.token}`,
+        'Content-Type': 'application/json',
+        'Accept': 'application/vnd.github.v3+json'
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (putRes.ok) {
+      showToast('credential.json tersimpan otomatis ke GitHub! 🔐', 'success');
+    } else {
+      const err = await putRes.json();
+      showToast('Gagal simpan credential.json: ' + (err.message || putRes.status), 'error');
+    }
+  } catch (e) {
+    showToast('Gagal push credential.json: ' + e.message, 'error');
+  }
 }
 
 function openChangePassword() { openSettings(); }
@@ -1998,7 +2061,8 @@ function importCredentials(event) {
 
       statusEl.className = 'cred-status ok';
       statusEl.innerHTML = '<i class="fa-solid fa-circle-check"></i> Credentials berhasil dimuat dari file!';
-      showToast('Credentials berhasil diimport dari credential.json!', 'success');
+      showToast('Credentials berhasil diimport! Menyinkronkan ke GitHub...', 'success');
+      await pushCredentialToGitHub();
 
       // Reset input so same file can be re-imported
       event.target.value = '';
