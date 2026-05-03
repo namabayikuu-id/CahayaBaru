@@ -1,0 +1,28 @@
+# ============================================================
+#  ENVIRONMENT VARIABLES — Set di Vercel Dashboard
+#  Project Settings → Environment Variables
+# ============================================================
+
+# --- GitHub Personal Access Token ---
+# Buat di: GitHub → Settings → Developer settings → Personal access tokens (classic)
+# Permission yang dibutuhkan: Contents: Read & Write
+GITHUB_TOKEN=ghp_xxxxxxxxxxxxxxxxxxxxxx
+
+# --- Konfigurasi Repositori GitHub ---
+GH_OWNER=username-github-anda
+GH_REPO=nama-repo-anda
+GH_BRANCH=main
+GH_FILE_PATH=products.json
+GH_IMAGE_FOLDER=images
+
+# --- Login Admin Default ---
+# Password yang sudah diubah via UI akan disimpan di _admin/config.json di repo.
+# Nilai di bawah hanya dipakai jika belum pernah diubah via UI.
+ADMIN_USER=admin
+ADMIN_PASS=admin123
+
+# ============================================================
+#  PENTING:
+#  - File ini JANGAN dicommit ke GitHub (tambahkan ke .gitignore)
+#  - Isi nilai di atas langsung di Vercel Dashboard, bukan di file ini
+# ============================================================
