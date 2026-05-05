@@ -152,5 +152,38 @@
     "grosir_min": "12 pcs",
     "kategori": "perabotan",
     "subkategori": "keluarga"
+  },
+  {
+    "id": 15,
+    "nama": "Telur Ayam Negri 1Kilogram (Semi Omega)",
+    "deskripsi": "Telur ayam negri, dalamnya orange",
+    "kategori": "sembako",
+    "subkategori": "beras",
+    "harga_satuan": 28000,
+    "harga_grosir": 275000,
+    "grosir_min": "10kg",
+    "foto": "https://raw.githubusercontent.com/namabayikuu-id/CahayaBaru/main/images/27073_1777939647045.jpg"
+  },
+  {
+    "id": 16,
+    "nama": "Sun Kara 65ml - Santan",
+    "deskripsi": "Krim kelapa merek sun kara 65ml, cocok untuk rendang, opor dan berbagai olahan santan lainya",
+    "kategori": "sembako",
+    "subkategori": "bumbu",
+    "harga_satuan": 6000,
+    "harga_grosir": 5500,
+    "grosir_min": "10",
+    "foto": "https://raw.githubusercontent.com/namabayikuu-id/CahayaBaru/main/images/27435_1777939841207.jpg"
+  },
+  {
+    "id": 17,
+    "nama": "Emping Melinjo 100gram",
+    "deskripsi": "Enak di makan bersama soto",
+    "kategori": "sembako",
+    "subkategori": "snack",
+    "harga_satuan": 13500,
+    "harga_grosir": 130000,
+    "grosir_min": "1kg",
+    "foto": "https://raw.githubusercontent.com/namabayikuu-id/CahayaBaru/main/images/27078_1777940008716.jpg"
   }
 ]
