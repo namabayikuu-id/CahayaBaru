@@ -818,6 +818,69 @@ tbody td { padding: 12px 16px; vertical-align: middle; }
 .saving-box p { font-weight: 700; color: var(--primary-dark); }
 .saving-box small { color: var(--text-muted); font-size: 12px; }
 
+/* ─── DELIVERY / ORDER STYLES ──────────────── */
+.order-status-badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700;
+}
+.status-pending   { background: #fff3cd; color: #856404; }
+.status-accepted  { background: rgba(13,202,240,.12); color: #0993b0; }
+.status-assigned  { background: rgba(111,66,193,.12); color: #6f42c1; }
+.status-picked_up { background: rgba(43,95,58,.12); color: var(--primary); }
+.status-on_the_way{ background: rgba(232,160,32,.15); color: #b07800; }
+.status-completed { background: var(--success-light); color: var(--success); }
+.status-cancelled { background: var(--danger-light); color: var(--danger); }
+
+.price-result-box {
+  background: linear-gradient(135deg, rgba(43,95,58,.08), rgba(232,160,32,.08));
+  border: 1.5px solid var(--border); border-radius: 12px;
+  padding: 14px 18px; margin-top: 12px; display: none;
+}
+.price-result-box .price-big {
+  font-family: 'Playfair Display', serif; font-size: 28px;
+  color: var(--primary-dark); font-weight: 700;
+}
+.price-result-box .price-info { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+
+#trackingMap { width: 100%; height: 320px; border-radius: 12px; background: #e8f0ec; }
+.driver-info-bar {
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 16px; background: var(--bg); border-radius: 10px; margin-bottom: 12px;
+}
+.driver-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--primary); color: #fff;
+  display: flex; align-items: center; justify-content: center; font-size: 20px; flex-shrink: 0;
+}
+.driver-avatar img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+.driver-detail strong { display: block; font-size: 14px; color: var(--text); }
+.driver-detail span { font-size: 12px; color: var(--text-muted); }
+.booking-status-timeline {
+  display: flex; gap: 0; margin: 16px 0; overflow-x: auto; padding-bottom: 4px;
+}
+.timeline-step {
+  display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 70px;
+  position: relative;
+}
+.timeline-step:not(:last-child)::after {
+  content: ''; position: absolute; top: 14px; left: 50%; width: 100%;
+  height: 2px; background: var(--border); z-index: 0;
+}
+.timeline-dot {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--border); color: #fff; font-size: 12px;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 1; position: relative; flex-shrink: 0;
+}
+.timeline-dot.done { background: var(--primary); }
+.timeline-dot.active { background: var(--accent); box-shadow: 0 0 0 4px rgba(232,160,32,.25); }
+.timeline-label { font-size: 10px; color: var(--text-muted); margin-top: 6px; text-align: center; }
+.timeline-label.active { color: var(--accent); font-weight: 700; }
+.timeline-label.done { color: var(--primary); }
+
+.form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 520px) { .form-2col { grid-template-columns: 1fr; } }
+
 /* ─── MOBILE SIDEBAR ────────────────────────── */
 .sidebar-overlay {
   display: none;
@@ -903,6 +966,11 @@ tbody td { padding: 12px 16px; vertical-align: middle; }
       <button class="nav-link" id="navProducts" onclick="showView('products')">
         <i class="fa-solid fa-boxes-stacked"></i> Produk
         <span class="badge" id="productCountBadge">0</span>
+      </button>
+      <div class="nav-section-label">Pengiriman</div>
+      <button class="nav-link" id="navPesanan" onclick="showView('pesanan')">
+        <i class="fa-solid fa-truck-fast"></i> Pesanan
+        <span class="badge" id="pesananCountBadge" style="display:none;">0</span>
       </button>
       <div class="nav-section-label">Akun</div>
       <button class="nav-link" onclick="openSettings()">
@@ -1037,6 +1105,40 @@ tbody td { padding: 12px 16px; vertical-align: middle; }
                 </tr>
               </thead>
               <tbody id="productTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PESANAN VIEW ── -->
+      <div class="view" id="viewPesanan">
+        <div class="card" style="margin-bottom:20px;">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-truck-fast" style="color:var(--primary);margin-right:6px;"></i> Manajemen Pesanan</h3>
+            <div style="display:flex;gap:10px;">
+              <button class="topbar-btn btn-outline" onclick="loadActiveOrders()">
+                <i class="fa-solid fa-rotate"></i> Refresh
+              </button>
+              <button class="topbar-btn btn-primary" onclick="openCreateOrderModal()">
+                <i class="fa-solid fa-plus"></i> Buat Pesanan
+              </button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID Pesanan</th>
+                  <th>Penerima</th>
+                  <th>Alamat Pickup → Dropoff</th>
+                  <th>Total</th>
+                  <th>Status</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="ordersTbody">
+                <tr><td colspan="6"><div class="table-empty"><i class="fa-solid fa-truck-fast"></i>Belum ada pesanan. Klik "Buat Pesanan".</div></td></tr>
+              </tbody>
             </table>
           </div>
         </div>
@@ -1948,5 +2050,658 @@ window.addEventListener('beforeunload', e => {
   if (unsaved) { e.preventDefault(); e.returnValue = ''; }
 });
 </script>
+<!-- ═══════════════════════════════════════════ -->
+<!--  CREATE ORDER MODAL                        -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="modal-overlay" id="createOrderModal">
+  <div class="modal-box" style="max-width:600px;">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-truck-fast" style="margin-right:8px;color:var(--primary);"></i>Buat Pesanan Pengiriman</h3>
+      <button class="modal-close" onclick="closeCreateOrderModal()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+
+      <div class="settings-section">
+        <h4>Layanan & Kendaraan</h4>
+        <div class="form-2col">
+          <div class="form-group">
+            <label class="form-label">Tipe Kendaraan <span style="color:var(--danger)">*</span></label>
+            <select class="form-select" id="oVehicle">
+              <option value="motor">Motor</option>
+              <option value="sepeda">Sepeda</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tier Layanan <span style="color:var(--danger)">*</span></label>
+            <select class="form-select" id="oTier">
+              <option value="normal">Normal</option>
+              <option value="ngebut">Ngebut</option>
+              <option value="bareng">Bareng</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Metode Pembayaran <span style="color:var(--danger)">*</span></label>
+          <select class="form-select" id="oPayment">
+            <option value="cash">Cash</option>
+            <option value="midtrans">Midtrans (Online)</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h4>Lokasi Pickup</h4>
+        <div class="form-group">
+          <label class="form-label">Alamat Pickup <span style="color:var(--danger)">*</span></label>
+          <input class="form-input" type="text" id="oPickupAddress" placeholder="Jl. Contoh No. 1, Jakarta">
+        </div>
+        <div class="form-2col">
+          <div class="form-group">
+            <label class="form-label">Latitude Pickup <span style="color:var(--danger)">*</span></label>
+            <input class="form-input" type="number" step="any" id="oPickupLat" placeholder="-6.200000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Longitude Pickup <span style="color:var(--danger)">*</span></label>
+            <input class="form-input" type="number" step="any" id="oPickupLng" placeholder="106.800000">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Alamat Dropoff <span style="color:var(--danger)">*</span></label>
+          <input class="form-input" type="text" id="oDropoffAddress" placeholder="Jl. Tujuan No. 2, Jakarta">
+        </div>
+        <div class="form-2col">
+          <div class="form-group">
+            <label class="form-label">Latitude Dropoff <span style="color:var(--danger)">*</span></label>
+            <input class="form-input" type="number" step="any" id="oDropoffLat" placeholder="-6.210000">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Longitude Dropoff <span style="color:var(--danger)">*</span></label>
+            <input class="form-input" type="number" step="any" id="oDropoffLng" placeholder="106.820000">
+          </div>
+        </div>
+        <div class="form-2col">
+          <div class="form-group">
+            <label class="form-label">Jarak (km) <span style="color:var(--danger)">*</span></label>
+            <input class="form-input" type="number" step="0.1" id="oDistance" placeholder="4.2">
+          </div>
+          <div class="form-group" style="display:flex;align-items:flex-end;">
+            <button class="topbar-btn btn-outline" style="width:100%;" onclick="hitungHarga()">
+              <i class="fa-solid fa-calculator"></i> Hitung Harga
+            </button>
+          </div>
+        </div>
+        <div class="price-result-box" id="priceResultBox">
+          <div style="font-size:11px;color:var(--text-muted);margin-bottom:4px;">Estimasi Ongkir</div>
+          <div class="price-big" id="priceResultVal">—</div>
+          <div class="price-info" id="priceResultInfo"></div>
+        </div>
+        <input type="hidden" id="oTotalFare">
+        <input type="hidden" id="oCustomerId" value="admin-panel">
+      </div>
+
+      <div class="settings-section">
+        <h4>Data Barang</h4>
+        <div class="form-2col">
+          <div class="form-group">
+            <label class="form-label">Ukuran Barang</label>
+            <select class="form-select" id="oItemSize">
+              <option value="kecil">Kecil</option>
+              <option value="sedang">Sedang</option>
+              <option value="besar">Besar</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Jenis Barang</label>
+            <input class="form-input" type="text" id="oItemType" placeholder="Paket, Makanan, dll">
+          </div>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <h4>Data Penerima</h4>
+        <div class="form-2col">
+          <div class="form-group">
+            <label class="form-label">Nama Penerima <span style="color:var(--danger)">*</span></label>
+            <input class="form-input" type="text" id="oRecipientName" placeholder="Nama lengkap">
+          </div>
+          <div class="form-group">
+            <label class="form-label">No. HP Penerima <span style="color:var(--danger)">*</span></label>
+            <input class="form-input" type="tel" id="oRecipientPhone" placeholder="08xxxxxxxxx">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Detail Alamat Penerima</label>
+          <textarea class="form-textarea" id="oRecipientAddrDetail" rows="2" placeholder="Lantai, blok, patokan, dll"></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Catatan ke Driver</label>
+          <input class="form-input" type="text" id="oNoteDriver" placeholder="Hati-hati, barang pecah belah">
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="topbar-btn btn-outline" onclick="closeCreateOrderModal()">Batal</button>
+      <button class="topbar-btn btn-primary" onclick="submitCreateOrder()" id="btnSubmitOrder">
+        <i class="fa-solid fa-paper-plane"></i> Buat Pesanan
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════ -->
+<!--  ORDER TRACKING MODAL                      -->
+<!-- ═══════════════════════════════════════════ -->
+<div class="modal-overlay" id="trackingModal">
+  <div class="modal-box" style="max-width:580px;">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-location-dot" style="margin-right:8px;color:var(--primary);"></i>Tracking Pesanan <span id="trackingOrderId" style="font-size:13px;color:var(--text-muted);font-family:'Nunito',sans-serif;font-weight:600;"></span></h3>
+      <button class="modal-close" onclick="closeTracking()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+
+      <!-- Status Timeline -->
+      <div class="booking-status-timeline" id="statusTimeline">
+        <div class="timeline-step">
+          <div class="timeline-dot" id="tDotPending"><i class="fa-solid fa-clock"></i></div>
+          <div class="timeline-label" id="tLblPending">Pending</div>
+        </div>
+        <div class="timeline-step">
+          <div class="timeline-dot" id="tDotAccepted"><i class="fa-solid fa-check"></i></div>
+          <div class="timeline-label" id="tLblAccepted">Diterima</div>
+        </div>
+        <div class="timeline-step">
+          <div class="timeline-dot" id="tDotPickedup"><i class="fa-solid fa-box"></i></div>
+          <div class="timeline-label" id="tLblPickedup">Dijemput</div>
+        </div>
+        <div class="timeline-step">
+          <div class="timeline-dot" id="tDotOnway"><i class="fa-solid fa-truck-fast"></i></div>
+          <div class="timeline-label" id="tLblOnway">Di Jalan</div>
+        </div>
+        <div class="timeline-step">
+          <div class="timeline-dot" id="tDotDone"><i class="fa-solid fa-flag-checkered"></i></div>
+          <div class="timeline-label" id="tLblDone">Selesai</div>
+        </div>
+      </div>
+
+      <!-- Driver Info -->
+      <div class="driver-info-bar" id="driverInfoBar" style="display:none;">
+        <div class="driver-avatar" id="driverAvatar"><i class="fa-solid fa-user"></i></div>
+        <div class="driver-detail">
+          <strong id="driverName">—</strong>
+          <span id="driverRating"></span>
+        </div>
+        <div style="margin-left:auto;">
+          <span id="trackingStatusBadge" class="order-status-badge status-pending">—</span>
+        </div>
+      </div>
+
+      <!-- Map -->
+      <div id="trackingMap"></div>
+      <div style="font-size:11px;color:var(--text-muted);margin-top:6px;">
+        <i class="fa-solid fa-rotate"></i> Lokasi diperbarui otomatis setiap 5 detik.
+        <span id="lastUpdateTime"></span>
+      </div>
+
+    </div>
+    <div class="modal-footer" style="justify-content:space-between;">
+      <button class="topbar-btn btn-danger-outline" id="btnCancelOrder" onclick="cancelCurrentOrder()" style="display:none;">
+        <i class="fa-solid fa-ban"></i> Batalkan Pesanan
+      </button>
+      <button class="topbar-btn btn-outline" onclick="closeTracking()">Tutup</button>
+    </div>
+  </div>
+</div>
+
 </body>
+<!-- Leaflet Map -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+<script>
+// ═══════════════════════════════════════════════
+//  DELIVERY CONFIG
+// ═══════════════════════════════════════════════
+const API_BASE = 'https://travel-api-production-23ae.up.railway.app/api';
+
+// Local store for admin-created orders
+let localOrders = JSON.parse(localStorage.getItem('cb_orders') || '[]');
+let trackingMap = null;
+let trackingMarkerDriver = null;
+let trackingMarkerPickup = null;
+let trackingMarkerDropoff = null;
+let trackingPolyline = null;
+let trackingInterval = null;
+let trackingBookingId = null;
+
+function saveLocalOrders() {
+  localStorage.setItem('cb_orders', JSON.stringify(localOrders));
+}
+
+// ═══════════════════════════════════════════════
+//  SHOW VIEW (extend existing)
+// ═══════════════════════════════════════════════
+const _origShowView = showView;
+function showView(name) {
+  _origShowView(name);
+  if (name === 'pesanan') {
+    document.getElementById('pageTitle').textContent = 'Pesanan & Pengiriman';
+    loadActiveOrders();
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  ORDERS LIST
+// ═══════════════════════════════════════════════
+async function loadActiveOrders() {
+  const tbody = document.getElementById('ordersTbody');
+  if (!localOrders.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="table-empty"><i class="fa-solid fa-truck-fast"></i>Belum ada pesanan. Klik "Buat Pesanan".</div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = localOrders.map(o => `
+    <tr>
+      <td style="font-size:11px;font-family:monospace;color:var(--text-muted);">${o.id}</td>
+      <td>
+        <div style="font-weight:700;">${o.recipientName}</div>
+        <div style="font-size:11px;color:var(--text-muted);">${o.recipientPhone}</div>
+      </td>
+      <td style="font-size:12px;max-width:200px;">
+        <div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${o.pickupAddress}</div>
+        <div style="color:var(--text-muted);">→ ${o.dropoffAddress}</div>
+      </td>
+      <td><span class="price-val">${formatRp(o.totalFare)}</span></td>
+      <td><span class="order-status-badge status-${o.status}">${statusLabel(o.status)}</span></td>
+      <td>
+        <div class="td-actions">
+          <button class="action-btn action-edit" title="Track" onclick="openTracking('${o.id}')">
+            <i class="fa-solid fa-location-dot"></i>
+          </button>
+          ${['pending','accepted','assigned'].includes(o.status) ? `
+          <button class="action-btn action-delete" title="Batalkan" onclick="confirmCancelOrder('${o.id}')">
+            <i class="fa-solid fa-ban"></i>
+          </button>` : ''}
+        </div>
+      </td>
+    </tr>
+  `).join('');
+
+  // Refresh statuses in background
+  localOrders.forEach(o => {
+    if (!['completed','cancelled'].includes(o.status)) refreshOrderStatus(o.id);
+  });
+
+  const active = localOrders.filter(o => !['completed','cancelled'].includes(o.status)).length;
+  const badge = document.getElementById('pesananCountBadge');
+  if (active > 0) { badge.style.display = ''; badge.textContent = active; }
+  else badge.style.display = 'none';
+}
+
+async function refreshOrderStatus(bookingId) {
+  try {
+    const res = await fetch(`${API_BASE}/bookings/delivery/${bookingId}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    const status = data.status || data.booking?.status;
+    if (!status) return;
+    const idx = localOrders.findIndex(o => o.id === bookingId);
+    if (idx !== -1 && localOrders[idx].status !== status) {
+      localOrders[idx].status = status;
+      saveLocalOrders();
+      loadActiveOrders();
+    }
+  } catch (_) {}
+}
+
+function statusLabel(s) {
+  const map = {
+    pending: 'Menunggu Driver', accepted: 'Driver Diterima',
+    assigned: 'Driver Ditugaskan', picked_up: 'Barang Dijemput',
+    on_the_way: 'Dalam Pengiriman', completed: 'Selesai', cancelled: 'Dibatalkan'
+  };
+  return map[s] || s;
+}
+
+// ═══════════════════════════════════════════════
+//  CREATE ORDER MODAL
+// ═══════════════════════════════════════════════
+function openCreateOrderModal() {
+  document.getElementById('createOrderModal').classList.add('open');
+}
+function closeCreateOrderModal() {
+  document.getElementById('createOrderModal').classList.remove('open');
+  document.getElementById('priceResultBox').style.display = 'none';
+  document.getElementById('oTotalFare').value = '';
+}
+
+async function hitungHarga() {
+  const vehicleType = document.getElementById('oVehicle').value;
+  const tier        = document.getElementById('oTier').value;
+  const distance    = parseFloat(document.getElementById('oDistance').value);
+
+  if (!distance || distance <= 0) {
+    showToast('Isi jarak terlebih dahulu!', 'warning'); return;
+  }
+
+  const box  = document.getElementById('priceResultBox');
+  const valEl = document.getElementById('priceResultVal');
+  const infoEl = document.getElementById('priceResultInfo');
+  valEl.textContent = 'Menghitung...';
+  box.style.display = 'block';
+
+  try {
+    const url = `${API_BASE}/pricing/calculate?serviceCode=antar_paket&vehicleType=${vehicleType}&distance=${distance}&serviceTier=${tier}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const fare = data.total_fare || data.fare || data.price || data.amount;
+    if (!fare) throw new Error('Respons tidak valid');
+    document.getElementById('oTotalFare').value = fare;
+    valEl.textContent = formatRp(fare);
+    infoEl.textContent = `Jarak: ${distance} km · Kendaraan: ${vehicleType} · Tier: ${tier}`;
+    if (data.promo_code) infoEl.textContent += ` · Promo: ${data.promo_code}`;
+  } catch (e) {
+    valEl.textContent = 'Gagal menghitung';
+    infoEl.textContent = e.message;
+    showToast('Gagal hitung harga: ' + e.message, 'error');
+  }
+}
+
+async function submitCreateOrder() {
+  const btn = document.getElementById('btnSubmitOrder');
+  const pickupAddress  = document.getElementById('oPickupAddress').value.trim();
+  const dropoffAddress = document.getElementById('oDropoffAddress').value.trim();
+  const pickupLat  = parseFloat(document.getElementById('oPickupLat').value);
+  const pickupLng  = parseFloat(document.getElementById('oPickupLng').value);
+  const dropoffLat = parseFloat(document.getElementById('oDropoffLat').value);
+  const dropoffLng = parseFloat(document.getElementById('oDropoffLng').value);
+  const distance   = parseFloat(document.getElementById('oDistance').value);
+  const totalFare  = parseFloat(document.getElementById('oTotalFare').value);
+  const recipientName  = document.getElementById('oRecipientName').value.trim();
+  const recipientPhone = document.getElementById('oRecipientPhone').value.trim();
+
+  if (!pickupAddress || !dropoffAddress || !recipientName || !recipientPhone || !distance) {
+    showToast('Lengkapi semua field wajib!', 'warning'); return;
+  }
+  if (!totalFare) {
+    showToast('Klik "Hitung Harga" terlebih dahulu!', 'warning'); return;
+  }
+
+  btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
+
+  const payload = {
+    customer_id:             'admin-panel',
+    vehicle_type:            document.getElementById('oVehicle').value,
+    service_tier:            document.getElementById('oTier').value,
+    pickup_address:          pickupAddress,
+    dropoff_address:         dropoffAddress,
+    pickup_lat:              pickupLat, pickup_lng: pickupLng,
+    dropoff_lat:             dropoffLat, dropoff_lng: dropoffLng,
+    distance_km:             distance,
+    total_fare:              totalFare,
+    item_size:               document.getElementById('oItemSize').value,
+    item_type:               document.getElementById('oItemType').value.trim() || 'Paket',
+    item_photo_url:          '',
+    recipient_name:          recipientName,
+    recipient_phone:         recipientPhone,
+    recipient_address_detail: document.getElementById('oRecipientAddrDetail').value.trim(),
+    recipient_note_to_driver: document.getElementById('oNoteDriver').value.trim(),
+    payment_method:          document.getElementById('oPayment').value,
+  };
+
+  try {
+    const res = await fetch(`${API_BASE}/bookings/delivery/create`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || data.error || `HTTP ${res.status}`);
+
+    const bookingId = data.booking_id || data.id || data.booking?.id || data.bookingId;
+    if (!bookingId) throw new Error('Tidak mendapat booking ID dari server.');
+
+    // Simpan ke local store
+    localOrders.unshift({
+      id:             bookingId,
+      recipientName,
+      recipientPhone,
+      pickupAddress,
+      dropoffAddress,
+      totalFare,
+      status:         'pending',
+      vehicleType:    payload.vehicle_type,
+      pickupLat, pickupLng, dropoffLat, dropoffLng,
+      createdAt:      new Date().toISOString(),
+    });
+    saveLocalOrders();
+
+    closeCreateOrderModal();
+    showToast(`Pesanan berhasil dibuat! ID: ${bookingId}`, 'success');
+    loadActiveOrders();
+
+    // Jika Midtrans, buka token
+    if (payload.payment_method === 'midtrans' && data.snap_token) {
+      window.open(data.redirect_url || `https://app.midtrans.com/snap/v2/vtweb/${data.snap_token}`, '_blank');
+    }
+
+    // Auto-buka tracking
+    setTimeout(() => openTracking(bookingId), 800);
+
+  } catch (e) {
+    showToast('Gagal buat pesanan: ' + e.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Buat Pesanan';
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  TRACKING MODAL
+// ═══════════════════════════════════════════════
+function openTracking(bookingId) {
+  trackingBookingId = bookingId;
+  document.getElementById('trackingOrderId').textContent = `#${bookingId}`;
+  document.getElementById('driverInfoBar').style.display = 'none';
+  document.getElementById('btnCancelOrder').style.display = 'none';
+  document.getElementById('trackingModal').classList.add('open');
+
+  // Init map
+  setTimeout(() => {
+    if (!trackingMap) {
+      trackingMap = L.map('trackingMap').setView([-6.2, 106.8], 13);
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap'
+      }).addTo(trackingMap);
+    } else {
+      trackingMap.invalidateSize();
+    }
+    startTrackingPolling();
+  }, 200);
+}
+
+function closeTracking() {
+  document.getElementById('trackingModal').classList.remove('open');
+  stopTrackingPolling();
+}
+
+function startTrackingPolling() {
+  stopTrackingPolling();
+  pollTracking();
+  trackingInterval = setInterval(pollTracking, 5000);
+}
+
+function stopTrackingPolling() {
+  if (trackingInterval) { clearInterval(trackingInterval); trackingInterval = null; }
+}
+
+async function pollTracking() {
+  if (!trackingBookingId) return;
+  try {
+    // 1. Booking status
+    const bRes = await fetch(`${API_BASE}/bookings/delivery/${trackingBookingId}`);
+    if (!bRes.ok) return;
+    const bData = await bRes.json();
+    const booking = bData.booking || bData;
+    const status  = booking.status;
+    const driverId = booking.driver_id;
+
+    updateStatusTimeline(status);
+
+    // Update local store
+    const idx = localOrders.findIndex(o => o.id === trackingBookingId);
+    if (idx !== -1) { localOrders[idx].status = status; saveLocalOrders(); }
+
+    // Show/hide cancel button
+    document.getElementById('btnCancelOrder').style.display =
+      ['pending','accepted','assigned'].includes(status) ? '' : 'none';
+
+    // 2. Driver info + location
+    if (driverId) {
+      document.getElementById('driverInfoBar').style.display = 'flex';
+
+      // Driver profile
+      try {
+        const dRes = await fetch(`${API_BASE}/admin/drivers/${driverId}`);
+        if (dRes.ok) {
+          const dData = await dRes.json();
+          const d = dData.driver || dData;
+          document.getElementById('driverName').textContent = d.name || d.full_name || 'Driver';
+          const rating = d.rating ? `⭐ ${parseFloat(d.rating).toFixed(1)}` : '';
+          document.getElementById('driverRating').textContent = rating;
+          if (d.photo_url || d.photo) {
+            const avatarEl = document.getElementById('driverAvatar');
+            avatarEl.innerHTML = `<img src="${d.photo_url || d.photo}" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid fa-user\\'></i>'">`;
+          }
+        }
+      } catch (_) {}
+
+      // Driver location
+      try {
+        const lRes = await fetch(`${API_BASE}/driver-location/current/${driverId}`);
+        if (lRes.ok) {
+          const lData = await lRes.json();
+          const loc = lData.location || lData;
+          const lat = parseFloat(loc.latitude);
+          const lng = parseFloat(loc.longitude);
+          if (!isNaN(lat) && !isNaN(lng)) updateDriverOnMap(lat, lng);
+        }
+      } catch (_) {}
+    }
+
+    // Status badge
+    document.getElementById('trackingStatusBadge').className = `order-status-badge status-${status}`;
+    document.getElementById('trackingStatusBadge').textContent = statusLabel(status);
+    document.getElementById('lastUpdateTime').textContent = ` · ${new Date().toLocaleTimeString('id-ID')}`;
+
+    // Draw pickup & dropoff markers once
+    const order = localOrders.find(o => o.id === trackingBookingId);
+    if (order && !trackingMarkerPickup) {
+      const pickupIcon = L.divIcon({ html: '<div style="background:#2B5F3A;color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.3)">P</div>', iconSize: [28,28], iconAnchor: [14,14] });
+      const dropoffIcon = L.divIcon({ html: '<div style="background:#dc3545;color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:14px;box-shadow:0 2px 8px rgba(0,0,0,.3)">D</div>', iconSize: [28,28], iconAnchor: [14,14] });
+      trackingMarkerPickup  = L.marker([order.pickupLat, order.pickupLng], { icon: pickupIcon })
+        .addTo(trackingMap).bindPopup(`<b>Pickup:</b> ${order.pickupAddress}`);
+      trackingMarkerDropoff = L.marker([order.dropoffLat, order.dropoffLng], { icon: dropoffIcon })
+        .addTo(trackingMap).bindPopup(`<b>Dropoff:</b> ${order.dropoffAddress}`);
+      trackingMap.fitBounds([[order.pickupLat, order.pickupLng],[order.dropoffLat, order.dropoffLng]], { padding: [40,40] });
+    }
+
+    if (status === 'completed') stopTrackingPolling();
+
+  } catch (e) {
+    console.warn('Tracking poll error:', e);
+  }
+}
+
+function updateDriverOnMap(lat, lng) {
+  const driverIcon = L.divIcon({
+    html: '<div style="background:#E8A020;color:#fff;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:16px;box-shadow:0 2px 10px rgba(0,0,0,.35)"><i class="fa-solid fa-motorcycle"></i></div>',
+    iconSize: [34,34], iconAnchor: [17,17]
+  });
+  if (!trackingMarkerDriver) {
+    trackingMarkerDriver = L.marker([lat, lng], { icon: driverIcon }).addTo(trackingMap).bindPopup('Driver');
+  } else {
+    trackingMarkerDriver.setLatLng([lat, lng]);
+  }
+  trackingMap.panTo([lat, lng], { animate: true });
+}
+
+function updateStatusTimeline(status) {
+  const steps = [
+    { key: 'pending',   dotId: 'tDotPending',  lblId: 'tLblPending' },
+    { key: 'accepted',  dotId: 'tDotAccepted', lblId: 'tLblAccepted' },
+    { key: 'picked_up', dotId: 'tDotPickedup', lblId: 'tLblPickedup' },
+    { key: 'on_the_way',dotId: 'tDotOnway',    lblId: 'tLblOnway' },
+    { key: 'completed', dotId: 'tDotDone',     lblId: 'tLblDone' },
+  ];
+  const order_map = ['pending','accepted','assigned','picked_up','on_the_way','completed'];
+  const currentIdx = order_map.indexOf(status);
+  steps.forEach((s, i) => {
+    const stepIdx = order_map.indexOf(s.key);
+    const dot = document.getElementById(s.dotId);
+    const lbl = document.getElementById(s.lblId);
+    dot.className = 'timeline-dot';
+    lbl.className = 'timeline-label';
+    if (stepIdx < currentIdx)       { dot.classList.add('done');   lbl.classList.add('done'); }
+    else if (stepIdx === currentIdx) { dot.classList.add('active'); lbl.classList.add('active'); }
+  });
+}
+
+// ═══════════════════════════════════════════════
+//  CANCEL ORDER
+// ═══════════════════════════════════════════════
+async function cancelCurrentOrder() {
+  if (!confirm('Batalkan pesanan ini?')) return;
+  await doCancelOrder(trackingBookingId);
+}
+
+async function confirmCancelOrder(bookingId) {
+  if (!confirm('Batalkan pesanan ini?')) return;
+  await doCancelOrder(bookingId);
+}
+
+async function doCancelOrder(bookingId) {
+  try {
+    const res = await fetch(`${API_BASE}/bookings/${bookingId}/cancel`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reason: 'Dibatalkan oleh admin', cancelled_by: 'customer' }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || `HTTP ${res.status}`);
+    const idx = localOrders.findIndex(o => o.id === bookingId);
+    if (idx !== -1) { localOrders[idx].status = 'cancelled'; saveLocalOrders(); }
+    showToast('Pesanan berhasil dibatalkan.', 'success');
+    loadActiveOrders();
+    if (trackingBookingId === bookingId) closeTracking();
+  } catch (e) {
+    showToast('Gagal batalkan: ' + e.message, 'error');
+  }
+}
+
+// ── Reset tracking markers when modal closes ──
+['productModal','confirmModal','settingsModal'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('click', function(e) { if (e.target===this) this.classList.remove('open'); });
+});
+['createOrderModal','trackingModal'].forEach(id => {
+  document.getElementById(id).addEventListener('click', function(e) {
+    if (e.target === this) {
+      this.classList.remove('open');
+      if (id === 'trackingModal') {
+        stopTrackingPolling();
+        trackingMarkerPickup = trackingMarkerDropoff = null;
+        if (trackingMap) { trackingMap.remove(); trackingMap = null; trackingMarkerDriver = null; }
+      }
+    }
+  });
+});
+
+// Load orders badge on init
+document.addEventListener('DOMContentLoaded', () => {
+  const active = localOrders.filter(o => !['completed','cancelled'].includes(o.status)).length;
+  const badge = document.getElementById('pesananCountBadge');
+  if (badge && active > 0) { badge.style.display = ''; badge.textContent = active; }
+});
+</script>
 </html>
