@@ -2510,6 +2510,13 @@ async function submitCreateOrder() {
     showToast('Klik "Hitung Harga" terlebih dahulu!', 'warning'); return;
   }
 
+  if (isNaN(pickupLat) || isNaN(pickupLng)) {
+    showToast('Koordinat pickup tidak valid. Set lokasi toko di Settings!', 'warning'); return;
+  }
+  if (isNaN(dropoffLat) || isNaN(dropoffLng)) {
+    showToast('Koordinat dropoff tidak valid. Isi latitude & longitude penerima!', 'warning'); return;
+  }
+
   btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
 
   const payload = {
@@ -2533,13 +2540,20 @@ async function submitCreateOrder() {
   };
 
   try {
+    console.log('📦 Payload dikirim ke server:', JSON.stringify(payload, null, 2));
     const res = await fetch(`${API_BASE}/bookings/delivery/create`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.message || data.error || `HTTP ${res.status}`);
+    console.log('📨 Response server:', JSON.stringify(data, null, 2));
+    if (!res.ok) {
+      // Tampilkan detail error selengkap mungkin
+      const detail = data.details || data.errors || data.validation || '';
+      const detailStr = detail ? (' | Detail: ' + JSON.stringify(detail)) : '';
+      throw new Error((data.message || data.error || `HTTP ${res.status}`) + detailStr);
+    }
 
     const bookingId = data.booking_id || data.id || data.booking?.id || data.bookingId;
     if (!bookingId) throw new Error('Tidak mendapat booking ID dari server.');
