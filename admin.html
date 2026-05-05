@@ -1433,7 +1433,7 @@ function showView(name) {
   const pageTitles = {
     dashboard: 'Dashboard',
     products:  'Daftar Produk',
-    pesanan:   'Manajemen Pesanan',
+    pesanan:   'Pesanan & Pengiriman',
   };
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-link[id^="nav"]').forEach(l => l.classList.remove('active'));
@@ -2288,14 +2288,7 @@ function saveLocalOrders() {
 // ═══════════════════════════════════════════════
 //  SHOW VIEW (extend existing)
 // ═══════════════════════════════════════════════
-const _origShowView = showView;
-function showView(name) {
-  _origShowView(name);
-  if (name === 'pesanan') {
-    document.getElementById('pageTitle').textContent = 'Pesanan & Pengiriman';
-    loadActiveOrders();
-  }
-}
+// pesanan auto-load handled inside showView above
 
 // ═══════════════════════════════════════════════
 //  ORDERS LIST
