@@ -2205,11 +2205,16 @@ window.addEventListener('beforeunload', e => {
         <h4>Data Barang</h4>
         <div class="form-2col">
           <div class="form-group">
-            <label class="form-label">Ukuran Barang</label>
+            <label class="form-label">Berat Paket (kg)</label>
             <select class="form-select" id="oItemSize">
-              <option value="small">Kecil (Small)</option>
-              <option value="medium" selected>Sedang (Medium)</option>
-              <option value="large">Besar (Large)</option>
+              <option value="1">≤ 1 kg</option>
+              <option value="2">≤ 2 kg</option>
+              <option value="3">≤ 3 kg</option>
+              <option value="5" selected>≤ 5 kg</option>
+              <option value="10">≤ 10 kg</option>
+              <option value="15">≤ 15 kg</option>
+              <option value="20">≤ 20 kg</option>
+              <option value="30">≤ 30 kg</option>
             </select>
           </div>
           <div class="form-group">
@@ -2556,7 +2561,7 @@ async function submitCreateOrder() {
     dropoff_lat:             dropoffLat, dropoff_lng: dropoffLng,
     distance_km:             distance,
     total_fare:              totalFare,
-    item_size:               document.getElementById('oItemSize').value,
+    item_size:               parseInt(document.getElementById('oItemSize').value),
     item_type:               document.getElementById('oItemType').value.trim() || 'Paket',
     item_photo_url:          '',
     recipient_name:          recipientName,
