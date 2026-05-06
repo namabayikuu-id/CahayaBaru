@@ -1290,6 +1290,15 @@ tbody td { padding: 12px 16px; vertical-align: middle; }
       </div>
 
       <div class="settings-section">
+        <h4><i class="fa-solid fa-id-badge" style="color:var(--primary);margin-right:6px;"></i>Customer ID Admin</h4>
+        <div class="form-hint" style="margin-bottom:12px;">ID integer dari tabel <code>customers</code> di database Hantar untuk akun admin. Digunakan saat membuat pesanan. Minta ke developer backend jika belum tahu.</div>
+        <div class="form-group">
+          <label class="form-label">Customer ID <span style="color:var(--danger)">*</span></label>
+          <input class="form-input" type="number" id="settingCustomerId" placeholder="Contoh: 1" style="max-width:200px;">
+        </div>
+      </div>
+
+      <div class="settings-section">
         <h4><i class="fa-solid fa-store" style="color:var(--primary);margin-right:6px;"></i>Lokasi Pickup Default (Toko)</h4>
         <div class="form-hint" style="margin-bottom:12px;">Akan otomatis terisi setiap kali buat pesanan baru. Bisa diubah manual saat pesan.</div>
         <div class="form-group">
@@ -1988,6 +1997,12 @@ function loadSettings() {
   if (el('infoFilePath'))    el('infoFilePath').textContent    = cfg.filePath    || '—';
   if (el('infoImageFolder')) el('infoImageFolder').textContent = cfg.imageFolder || '—';
 
+  // Load customer ID
+  const savedCustId = localStorage.getItem('cb_admin_customer_id');
+  if (savedCustId && document.getElementById('settingCustomerId')) {
+    document.getElementById('settingCustomerId').value = savedCustId;
+  }
+
   // Load default pickup dari localStorage
   const dp = getDefaultPickup();
   if (el('defaultPickupAddress')) el('defaultPickupAddress').value = dp.address || '';
@@ -2005,6 +2020,13 @@ function closeSettings() {
 }
 
 async function saveSettings() {
+  // Simpan customer ID
+  const custId = document.getElementById('settingCustomerId')?.value.trim();
+  if (custId) {
+    localStorage.setItem('cb_admin_customer_id', custId);
+    showToast('Customer ID disimpan!', 'success');
+  }
+
   // Simpan default pickup
   const addr = document.getElementById('defaultPickupAddress')?.value.trim();
   const lat  = document.getElementById('defaultPickupLat')?.value.trim();
@@ -2517,10 +2539,15 @@ async function submitCreateOrder() {
     showToast('Koordinat dropoff tidak valid. Isi latitude & longitude penerima!', 'warning'); return;
   }
 
+  const customerId = parseInt(localStorage.getItem('cb_admin_customer_id') || '0');
+  if (!customerId) {
+    showToast('Belum set Customer ID Admin di Settings!', 'warning'); return;
+  }
+
   btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Memproses...';
 
   const payload = {
-    customer_id:             'admin-panel',
+    customer_id:             customerId,
     vehicle_type:            document.getElementById('oVehicle').value,
     service_tier:            document.getElementById('oTier').value,
     pickup_address:          pickupAddress,
