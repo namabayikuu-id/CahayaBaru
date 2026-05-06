@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cahaya Baru — Lacak Pesanan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<style>
+:root {
+  --primary: #2B5F3A; --primary-light: #3d7a50; --primary-dark: #1a3d25;
+  --primary-xdark: #0f2416; --accent: #E8A020; --accent-light: #f5c050;
+  --danger: #dc3545; --success: #198754; --success-light: #d1e7dd;
+  --bg: #f0f4f2; --card: #ffffff; --border: #dde8e2;
+  --text: #1a2e22; --text-muted: #6b7f72;
+  --shadow: 0 2px 16px rgba(27,61,37,.09); --radius: 16px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* ── HEADER ── */
+header {
+  background: linear-gradient(135deg, var(--primary-xdark) 0%, var(--primary-dark) 60%, var(--primary) 100%);
+  padding: 0 24px;
+  height: 64px;
+  display: flex; align-items: center; justify-content: space-between;
+  box-shadow: 0 4px 24px rgba(0,0,0,.2);
+  position: sticky; top: 0; z-index: 100;
+}
+.header-brand { display: flex; align-items: center; gap: 12px; }
+.header-logo {
+  width: 38px; height: 38px; background: var(--accent); border-radius: 10px;
+  display: flex; align-items: center; justify-content: center; font-size: 18px; color: var(--primary-dark);
+}
+.header-brand h1 { font-family: 'Playfair Display', serif; font-size: 18px; color: #fff; }
+.header-brand small { font-size: 10px; color: rgba(255,255,255,.5); display: block; letter-spacing: 1px; text-transform: uppercase; }
+
+/* ── HERO SEARCH ── */
+.hero {
+  background: linear-gradient(135deg, var(--primary-xdark) 0%, var(--primary-dark) 60%, var(--primary) 100%);
+  padding: 48px 24px 80px;
+  text-align: center;
+}
+.hero h2 {
+  font-family: 'Playfair Display', serif; font-size: 30px; color: #fff; margin-bottom: 8px;
+}
+.hero p { font-size: 14px; color: rgba(255,255,255,.65); margin-bottom: 28px; }
+.search-box {
+  display: flex; gap: 0; max-width: 520px; margin: 0 auto;
+  background: #fff; border-radius: 14px; overflow: hidden;
+  box-shadow: 0 16px 48px rgba(0,0,0,.25);
+}
+.search-box input {
+  flex: 1; padding: 16px 18px; border: none; outline: none;
+  font-size: 14px; font-family: 'Nunito', sans-serif; color: var(--text);
+}
+.search-box button {
+  padding: 0 24px; background: var(--accent); border: none; cursor: pointer;
+  font-size: 18px; color: var(--primary-dark); transition: background .2s;
+}
+.search-box button:hover { background: var(--accent-light); }
+.search-hint { font-size: 11px; color: rgba(255,255,255,.4); margin-top: 10px; }
+
+/* ── MAIN CONTENT ── */
+.main { max-width: 760px; margin: -40px auto 40px; padding: 0 20px; }
+
+/* ── CARD ── */
+.card {
+  background: var(--card); border-radius: var(--radius); border: 1px solid var(--border);
+  box-shadow: var(--shadow); overflow: hidden; margin-bottom: 20px;
+}
+.card-header {
+  padding: 18px 24px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+}
+.card-header h3 { font-size: 15px; font-weight: 800; color: var(--primary-dark); }
+.card-body { padding: 22px 24px; }
+
+/* ── STATUS BADGE ── */
+.status-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700;
+}
+.status-pending   { background: #fff3cd; color: #856404; }
+.status-accepted  { background: rgba(13,202,240,.12); color: #0993b0; }
+.status-assigned  { background: rgba(111,66,193,.12); color: #6f42c1; }
+.status-picked_up { background: rgba(43,95,58,.12); color: var(--primary); }
+.status-on_the_way{ background: rgba(232,160,32,.15); color: #b07800; }
+.status-completed { background: var(--success-light); color: var(--success); }
+.status-cancelled { background: #f8d7da; color: var(--danger); }
+
+/* ── TIMELINE ── */
+.timeline {
+  display: flex; gap: 0; margin: 20px 0; overflow-x: auto; padding-bottom: 6px;
+}
+.tl-step { display: flex; flex-direction: column; align-items: center; flex: 1; min-width: 70px; position: relative; }
+.tl-step:not(:last-child)::after {
+  content:''; position:absolute; top:14px; left:50%; width:100%; height:2px; background:var(--border); z-index:0;
+}
+.tl-dot {
+  width: 28px; height: 28px; border-radius: 50%; background: var(--border); color: #fff;
+  display: flex; align-items: center; justify-content: center; font-size: 12px; z-index: 1; flex-shrink:0;
+}
+.tl-dot.done   { background: var(--primary); }
+.tl-dot.active { background: var(--accent); box-shadow: 0 0 0 4px rgba(232,160,32,.25); }
+.tl-label { font-size: 10px; color: var(--text-muted); margin-top: 6px; text-align: center; }
+.tl-label.done   { color: var(--primary); }
+.tl-label.active { color: var(--accent); font-weight: 800; }
+
+/* ── DRIVER CARD ── */
+.driver-bar {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 16px; background: var(--bg); border-radius: 12px; margin-bottom: 16px;
+  border: 1px solid var(--border);
+}
+.driver-avatar {
+  width: 48px; height: 48px; border-radius: 50%; background: var(--primary); color: #fff;
+  display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; overflow: hidden;
+}
+.driver-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.driver-name { font-weight: 800; font-size: 15px; color: var(--text); }
+.driver-rating { font-size: 12px; color: var(--text-muted); }
+
+/* ── MAP ── */
+#map { width: 100%; height: 360px; border-radius: 12px; z-index: 1; }
+.map-legend {
+  display: flex; gap: 16px; flex-wrap: wrap; margin-top: 10px; font-size: 12px; color: var(--text-muted);
+}
+.map-legend span { display: flex; align-items: center; gap: 5px; }
+.legend-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── INFO ROWS ── */
+.info-row { display: flex; gap: 12px; margin-bottom: 10px; font-size: 13.5px; }
+.info-row i { width: 18px; text-align: center; color: var(--primary); margin-top: 2px; flex-shrink: 0; }
+.info-label { color: var(--text-muted); font-size: 11px; }
+.info-val { font-weight: 700; color: var(--text); }
+
+/* ── EMPTY / ERROR STATE ── */
+.empty-state { text-align: center; padding: 48px 20px; }
+.empty-state i { font-size: 48px; color: var(--border); display: block; margin-bottom: 16px; }
+.empty-state h3 { font-size: 18px; color: var(--text-muted); margin-bottom: 6px; }
+.empty-state p { font-size: 13px; color: var(--text-muted); }
+
+/* ── LOADING ── */
+.spinner {
+  width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--primary);
+  border-radius: 50%; animation: spin .8s linear infinite; margin: 24px auto;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── PULSE DOT ── */
+.live-dot {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  background: #4ade80; margin-right: 5px; animation: pulse 1.5s infinite;
+}
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
+
+/* ── FOOTER ── */
+footer {
+  text-align: center; padding: 24px; font-size: 12px; color: var(--text-muted);
+  border-top: 1px solid var(--border); background: var(--card);
+}
+
+@media (max-width: 600px) {
+  .hero h2 { font-size: 22px; }
+  .hero { padding: 32px 16px 60px; }
+  .main { padding: 0 12px; }
+  #map { height: 280px; }
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="header-brand">
+    <div class="header-logo"><i class="fa-solid fa-store"></i></div>
+    <div>
+      <h1>Cahaya Baru</h1>
+      <small>Toko Kebutuhan</small>
+    </div>
+  </div>
+</header>
+
+<!-- HERO SEARCH -->
+<div class="hero">
+  <h2>Lacak Pesanan Anda</h2>
+  <p>Masukkan ID pesanan untuk melihat status dan lokasi driver secara langsung.</p>
+  <div class="search-box">
+    <input type="text" id="inputOrderId" placeholder="Contoh: BKG-20240501-001" autocomplete="off"
+      onkeydown="if(event.key==='Enter') startTracking()">
+    <button onclick="startTracking()" title="Lacak">
+      <i class="fa-solid fa-magnifying-glass"></i>
+    </button>
+  </div>
+  <div class="search-hint">ID pesanan tersedia di struk atau konfirmasi dari toko</div>
+</div>
+
+<!-- MAIN -->
+<div class="main" id="mainContent">
+  <div class="empty-state" id="emptyState">
+    <i class="fa-solid fa-truck-fast"></i>
+    <h3>Lacak pesanan Anda</h3>
+    <p>Masukkan ID pesanan di atas untuk mulai melacak.</p>
+  </div>
+</div>
+
+<footer>
+  &copy; 2024 Cahaya Baru — Toko Kebutuhan &amp; Pengiriman
+</footer>
+
+<script>
+const API_BASE = 'https://travel-api-production-23ae.up.railway.app/api';
+
+let map = null;
+let markerDriver = null, markerPickup = null, markerDropoff = null;
+let pollingInterval = null;
+let currentBookingId = null;
+let currentDriverId = null;
+
+// ── Auto-read from URL param ──
+window.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const id = params.get('id') || params.get('order');
+  if (id) {
+    document.getElementById('inputOrderId').value = id;
+    startTracking();
+  }
+});
+
+function startTracking() {
+  const id = document.getElementById('inputOrderId').value.trim();
+  if (!id) { shakeInput(); return; }
+
+  // Update URL silently
+  const url = new URL(window.location);
+  url.searchParams.set('id', id);
+  window.history.replaceState({}, '', url);
+
+  currentBookingId = id;
+  stopPolling();
+  renderLoading();
+  fetchBooking(true);
+  pollingInterval = setInterval(() => fetchBooking(false), 5000);
+}
+
+function shakeInput() {
+  const el = document.getElementById('inputOrderId');
+  el.style.outline = '2px solid #dc3545';
+  setTimeout(() => el.style.outline = '', 1000);
+}
+
+function stopPolling() {
+  if (pollingInterval) { clearInterval(pollingInterval); pollingInterval = null; }
+}
+
+// ── FETCH BOOKING ──
+async function fetchBooking(initial = false) {
+  try {
+    const res = await fetch(`${API_BASE}/bookings/delivery/${currentBookingId}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const booking = data.booking || data;
+    renderBooking(booking, initial);
+    if (booking.status === 'completed' || booking.status === 'cancelled') stopPolling();
+  } catch (e) {
+    if (initial) renderError(e.message);
+  }
+}
+
+// ── RENDER LOADING ──
+function renderLoading() {
+  document.getElementById('mainContent').innerHTML = `
+    <div class="card"><div class="card-body"><div class="spinner"></div><p style="text-align:center;color:var(--text-muted);">Mencari pesanan...</p></div></div>
+  `;
+}
+
+// ── RENDER ERROR ──
+function renderError(msg) {
+  document.getElementById('mainContent').innerHTML = `
+    <div class="card">
+      <div class="card-body">
+        <div class="empty-state">
+          <i class="fa-solid fa-circle-xmark" style="color:var(--danger);"></i>
+          <h3>Pesanan tidak ditemukan</h3>
+          <p>ID <strong>${currentBookingId}</strong> tidak ditemukan.<br>Periksa kembali ID pesanan Anda.</p>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// ── RENDER BOOKING ──
+function renderBooking(booking, initial) {
+  const status   = booking.status || 'pending';
+  const driverId = booking.driver_id;
+  const price    = booking.total_fare || booking.total_price || 0;
+
+  let html = `
+    <!-- STATUS CARD -->
+    <div class="card">
+      <div class="card-header">
+        <h3><i class="fa-solid fa-receipt" style="color:var(--primary);margin-right:6px;"></i>Pesanan ${currentBookingId}</h3>
+        <div>
+          ${status !== 'completed' && status !== 'cancelled' ? `<span class="live-dot"></span>` : ''}
+          <span class="status-badge status-${status}">${statusLabel(status)}</span>
+        </div>
+      </div>
+      <div class="card-body">
+        <!-- Timeline -->
+        ${renderTimeline(status)}
+
+        <!-- Info rows -->
+        <div style="margin-top:20px;border-top:1px solid var(--border);padding-top:16px;">
+          ${booking.pickup_address ? `
+          <div class="info-row">
+            <i class="fa-solid fa-location-dot"></i>
+            <div><div class="info-label">Alamat Pickup</div><div class="info-val">${booking.pickup_address}</div></div>
+          </div>` : ''}
+          ${booking.dropoff_address ? `
+          <div class="info-row">
+            <i class="fa-solid fa-flag-checkered"></i>
+            <div><div class="info-label">Alamat Tujuan</div><div class="info-val">${booking.dropoff_address}</div></div>
+          </div>` : ''}
+          ${booking.recipient_name ? `
+          <div class="info-row">
+            <i class="fa-solid fa-user"></i>
+            <div><div class="info-label">Penerima</div><div class="info-val">${booking.recipient_name} · ${booking.recipient_phone || ''}</div></div>
+          </div>` : ''}
+          ${price ? `
+          <div class="info-row">
+            <i class="fa-solid fa-money-bill-wave"></i>
+            <div><div class="info-label">Total Biaya</div><div class="info-val" style="color:var(--primary);">${formatRp(price)}</div></div>
+          </div>` : ''}
+        </div>
+      </div>
+    </div>
+
+    <!-- DRIVER + MAP CARD -->
+    <div class="card" id="driverMapCard" style="${driverId ? '' : 'display:none;'}">
+      <div class="card-header">
+        <h3><i class="fa-solid fa-location-dot" style="color:var(--primary);margin-right:6px;"></i>Lokasi Driver</h3>
+        <span style="font-size:11px;color:var(--text-muted);" id="lastUpdate"></span>
+      </div>
+      <div class="card-body">
+        <div class="driver-bar" id="driverBar">
+          <div class="driver-avatar" id="driverAvatar"><i class="fa-solid fa-user"></i></div>
+          <div>
+            <div class="driver-name" id="driverName">Memuat data driver...</div>
+            <div class="driver-rating" id="driverRating"></div>
+          </div>
+        </div>
+        <div id="map"></div>
+        <div class="map-legend">
+          <span><div class="legend-dot" style="background:#2B5F3A;"></div> Pickup</span>
+          <span><div class="legend-dot" style="background:#dc3545;"></div> Tujuan</span>
+          <span><div class="legend-dot" style="background:#E8A020;"></div> Driver</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- WAITING STATE -->
+    ${!driverId ? `
+    <div class="card">
+      <div class="card-body">
+        <div class="empty-state" style="padding:32px;">
+          <i class="fa-solid fa-clock" style="color:var(--accent);font-size:36px;"></i>
+          <h3 style="margin-top:12px;">Mencari driver terdekat...</h3>
+          <p>Pesanan Anda sedang menunggu driver. Halaman ini akan otomatis diperbarui.</p>
+        </div>
+      </div>
+    </div>` : ''}
+  `;
+
+  document.getElementById('mainContent').innerHTML = html;
+
+  // Init map
+  if (driverId) {
+    const pickupLat  = parseFloat(booking.pickup_lat);
+    const pickupLng  = parseFloat(booking.pickup_lng);
+    const dropoffLat = parseFloat(booking.dropoff_lat);
+    const dropoffLng = parseFloat(booking.dropoff_lng);
+
+    setTimeout(() => {
+      if (!map) {
+        const center = (!isNaN(pickupLat) && !isNaN(pickupLng))
+          ? [pickupLat, pickupLng] : [-6.2, 106.8];
+        map = L.map('map').setView(center, 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+
+        if (!isNaN(pickupLat)) {
+          const pIcon = L.divIcon({ html: mkDot('#2B5F3A','P'), iconSize:[28,28], iconAnchor:[14,14] });
+          markerPickup = L.marker([pickupLat, pickupLng], {icon:pIcon}).addTo(map)
+            .bindPopup(`<b>Pickup:</b> ${booking.pickup_address || ''}`);
+        }
+        if (!isNaN(dropoffLat)) {
+          const dIcon = L.divIcon({ html: mkDot('#dc3545','D'), iconSize:[28,28], iconAnchor:[14,14] });
+          markerDropoff = L.marker([dropoffLat, dropoffLng], {icon:dIcon}).addTo(map)
+            .bindPopup(`<b>Tujuan:</b> ${booking.dropoff_address || ''}`);
+        }
+        if (!isNaN(pickupLat) && !isNaN(dropoffLat)) {
+          map.fitBounds([[pickupLat,pickupLng],[dropoffLat,dropoffLng]], {padding:[40,40]});
+        }
+      }
+
+      if (driverId !== currentDriverId) {
+        currentDriverId = driverId;
+        fetchDriverProfile(driverId);
+      }
+      fetchDriverLocation(driverId);
+    }, 150);
+  } else {
+    map = null; markerDriver = null; markerPickup = null; markerDropoff = null;
+    currentDriverId = null;
+  }
+}
+
+function mkDot(bg, letter) {
+  return `<div style="background:${bg};color:#fff;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;box-shadow:0 2px 8px rgba(0,0,0,.3)">${letter}</div>`;
+}
+
+// ── DRIVER PROFILE ──
+async function fetchDriverProfile(driverId) {
+  try {
+    const res = await fetch(`${API_BASE}/admin/drivers/${driverId}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    const d = data.driver || data;
+    const nameEl = document.getElementById('driverName');
+    const ratingEl = document.getElementById('driverRating');
+    const avatarEl = document.getElementById('driverAvatar');
+    if (nameEl) nameEl.textContent = d.name || d.full_name || 'Driver';
+    if (ratingEl) ratingEl.textContent = d.rating ? `⭐ ${parseFloat(d.rating).toFixed(1)} · ${d.vehicle_plate || ''}` : (d.vehicle_plate || '');
+    if (avatarEl && (d.photo_url || d.photo)) {
+      avatarEl.innerHTML = `<img src="${d.photo_url || d.photo}" onerror="this.parentElement.innerHTML='<i class=\\'fa-solid fa-user\\'></i>'">`;
+    }
+  } catch (_) {}
+}
+
+// ── DRIVER LOCATION ──
+async function fetchDriverLocation(driverId) {
+  try {
+    const res = await fetch(`${API_BASE}/driver-location/current/${driverId}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    const loc = data.location || data;
+    const lat = parseFloat(loc.latitude);
+    const lng = parseFloat(loc.longitude);
+    if (isNaN(lat) || isNaN(lng)) return;
+
+    if (!map) return;
+    const dIcon = L.divIcon({
+      html: `<div style="background:#E8A020;color:#fff;border-radius:50%;width:36px;height:36px;display:flex;align-items:center;justify-content:center;font-size:17px;box-shadow:0 3px 12px rgba(0,0,0,.35)"><i class="fa-solid fa-motorcycle"></i></div>`,
+      iconSize: [36,36], iconAnchor: [18,18]
+    });
+    if (!markerDriver) {
+      markerDriver = L.marker([lat,lng], {icon:dIcon, zIndexOffset:1000}).addTo(map).bindPopup('Driver');
+    } else {
+      markerDriver.setLatLng([lat,lng]);
+    }
+    map.panTo([lat,lng], {animate:true});
+
+    const el = document.getElementById('lastUpdate');
+    if (el) el.textContent = `Diperbarui ${new Date().toLocaleTimeString('id-ID')}`;
+
+  } catch (_) {}
+}
+
+// ── TIMELINE ──
+function renderTimeline(status) {
+  const steps = [
+    { key: 'pending',    icon: 'fa-clock',           label: 'Pending' },
+    { key: 'accepted',   icon: 'fa-check',            label: 'Diterima' },
+    { key: 'picked_up',  icon: 'fa-box',              label: 'Dijemput' },
+    { key: 'on_the_way', icon: 'fa-truck-fast',       label: 'Di Jalan' },
+    { key: 'completed',  icon: 'fa-flag-checkered',   label: 'Selesai' },
+  ];
+  const orderMap = ['pending','accepted','assigned','picked_up','on_the_way','completed'];
+  const cur = orderMap.indexOf(status);
+  return `<div class="timeline">` + steps.map(s => {
+    const idx = orderMap.indexOf(s.key);
+    const cls = idx < cur ? 'done' : idx === cur ? 'active' : '';
+    return `
+      <div class="tl-step">
+        <div class="tl-dot ${cls}"><i class="fa-solid ${s.icon}"></i></div>
+        <div class="tl-label ${cls}">${s.label}</div>
+      </div>`;
+  }).join('') + `</div>`;
+}
+
+function statusLabel(s) {
+  const m = {
+    pending:'Menunggu Driver', accepted:'Driver Diterima', assigned:'Driver Ditugaskan',
+    picked_up:'Barang Dijemput', on_the_way:'Dalam Pengiriman', completed:'Selesai', cancelled:'Dibatalkan'
+  };
+  return m[s] || s;
+}
+
+function formatRp(n) {
+  return 'Rp ' + Number(n).toLocaleString('id-ID');
+}
+</script>
+</body>
+</html>
