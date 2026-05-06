@@ -144,6 +144,36 @@ header.scrolled { box-shadow: 0 6px 32px rgba(15,34,69,.5); }
 .nav-link i { font-size:11px; transition:transform .2s; }
 .nav-item:hover .nav-link i { transform:rotate(180deg); }
 
+/* Tracking button */
+.nav-link-tracking {
+  background: var(--accent) !important;
+  color: var(--primary-dark) !important;
+  border-radius: 50px !important;
+  padding: 8px 16px !important;
+  font-weight: 700 !important;
+  margin-left: 4px;
+  box-shadow: 0 4px 14px rgba(245,190,24,.35);
+  transition: all .25s !important;
+}
+.nav-link-tracking:hover {
+  background: var(--accent-light) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 8px 24px rgba(245,190,24,.5) !important;
+}
+.nav-link-tracking i { font-size: 13px !important; }
+
+/* Mobile tracking link */
+.mobile-nav-link-tracking {
+  background: rgba(245,190,24,.15) !important;
+  color: var(--accent-light) !important;
+  border: 1.5px solid rgba(245,190,24,.3);
+  margin-top: 6px;
+}
+.mobile-nav-link-tracking:hover {
+  background: rgba(245,190,24,.25) !important;
+}
+.mobile-nav-link-tracking i { color: var(--accent-light) !important; }
+
 .dropdown {
   position:absolute; top:calc(100% + 8px); left:50%;
   transform:translateX(-50%) translateY(8px);
@@ -846,6 +876,9 @@ footer { background:var(--primary-dark); color:rgba(255,255,255,.6); padding:40p
           <a href="#kontak"><i class="fa-brands fa-whatsapp"></i> Hubungi Kami</a>
         </div>
       </div>
+      <a href="tracking.html" class="nav-link nav-link-tracking">
+        <i class="fa-solid fa-truck-fast"></i> Tracking Pesanan
+      </a>
     </nav>
 
     <!-- Cart -->
@@ -874,6 +907,7 @@ footer { background:var(--primary-dark); color:rgba(255,255,255,.6); padding:40p
     <a href="#tentang-kami" class="mobile-nav-link" onclick="closeMobileMenu()"><i class="fa-solid fa-store"></i> Tentang Kami</a>
     <a href="#cerita-kami" class="mobile-nav-link" onclick="closeMobileMenu()"><i class="fa-solid fa-book-open"></i> Cerita Kami</a>
     <a href="#kontak" class="mobile-nav-link" onclick="closeMobileMenu()"><i class="fa-solid fa-location-dot"></i> Kontak &amp; Lokasi</a>
+    <a href="tracking.html" class="mobile-nav-link mobile-nav-link-tracking"><i class="fa-solid fa-truck-fast"></i> Tracking Pesanan</a>
   </div>
 </div>
 
