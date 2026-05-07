@@ -1785,7 +1785,7 @@ function sendOrderWA() {
     const price = getItemPrice(item);
     msg += `• ${item.product.nama}\n  ${item.qty} pcs × ${formatRp(price)} (${tipe}) = ${formatRp(price*item.qty)}\n\n`;
   });
-  msg += `─────────────────\n*Total: ${formatRp(getCartTotal())}*\n\nMohon konfirmasi ketersediaan stok dan detail pengiriman. Terima kasih! 🙏`;
+  msg += `─────────────────\n*Total: ${formatRp(getCartTotal())}*\n\nMohon konfirmasi ketersediaan stok dan detail pengiriman. Terima kasih! 🙏🏻`;
   window.open(`https://wa.me/6285888303137?text=${encodeURIComponent(msg)}`, '_blank');
 }
 
