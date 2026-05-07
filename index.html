@@ -255,19 +255,59 @@ header.scrolled { box-shadow: 0 6px 32px rgba(15,34,69,.5); }
   color:#fff; width:44px; height:44px; border-radius:12px; font-size:18px;
   cursor:pointer; display:flex; align-items:center; justify-content:center;
   transition:background .2s, transform .2s; flex-shrink:0;
+  overflow:visible;
 }
 .cart-btn:hover { background:rgba(255,255,255,.25); transform:scale(1.06); }
 .cart-badge {
-  position:absolute; top:-5px; right:-5px;
+  position:absolute; top:-8px; right:-8px;
   background:var(--accent); color:var(--primary-dark);
-  font-size:10px; font-weight:800; min-width:18px; height:18px;
-  border-radius:50px; display:flex; align-items:center; justify-content:center;
-  padding:0 4px; line-height:1; border:2px solid var(--primary);
-  display:none;
+  font-size:10px; font-weight:900; min-width:20px; height:20px;
+  border-radius:50px; align-items:center; justify-content:center;
+  padding:0 5px; line-height:1; border:2.5px solid var(--primary);
+  display:none; z-index:10; box-shadow:0 2px 6px rgba(0,0,0,.25);
+  letter-spacing:0;
 }
 .cart-badge.show { display:flex; }
 .cart-badge.pop { animation:badgePop .3s ease; }
-@keyframes badgePop { 0%{transform:scale(1)} 50%{transform:scale(1.6)} 100%{transform:scale(1)} }
+@keyframes badgePop { 0%{transform:scale(1)} 50%{transform:scale(1.7)} 100%{transform:scale(1)} }
+
+/* ===== FLOATING CART BUTTON ===== */
+.floating-cart {
+  position:fixed; bottom:28px; left:50%; transform:translateX(-50%) translateY(80px);
+  z-index:1700; display:flex; align-items:center; gap:12px;
+  background:var(--primary); color:#fff;
+  padding:14px 24px; border-radius:50px;
+  box-shadow:0 8px 32px rgba(15,34,69,.45), 0 2px 8px rgba(0,0,0,.2);
+  border:none; cursor:pointer; font-family:'Nunito',sans-serif;
+  font-size:15px; font-weight:700; white-space:nowrap;
+  transition:transform .4s cubic-bezier(.34,1.56,.64,1), opacity .3s, box-shadow .2s, background .2s;
+  opacity:0; pointer-events:none;
+}
+.floating-cart.visible {
+  transform:translateX(-50%) translateY(0);
+  opacity:1; pointer-events:all;
+}
+.floating-cart:hover {
+  background:var(--primary-light);
+  box-shadow:0 12px 40px rgba(15,34,69,.55), 0 2px 8px rgba(0,0,0,.2);
+  transform:translateX(-50%) translateY(-3px);
+}
+.floating-cart-icon {
+  position:relative; font-size:18px;
+}
+.floating-cart-badge {
+  position:absolute; top:-8px; right:-8px;
+  background:var(--accent); color:var(--primary-dark);
+  font-size:9px; font-weight:900; min-width:17px; height:17px;
+  border-radius:50px; display:flex; align-items:center; justify-content:center;
+  padding:0 4px; border:2px solid var(--primary); line-height:1;
+  box-shadow:0 2px 4px rgba(0,0,0,.2);
+}
+.floating-cart-info { display:flex; flex-direction:column; line-height:1.2; }
+.floating-cart-label { font-size:11px; opacity:.7; font-weight:600; }
+.floating-cart-total { font-size:14px; font-weight:800; color:var(--accent-light); }
+.floating-cart.bump { animation:floatBump .3s ease; }
+@keyframes floatBump { 0%{transform:translateX(-50%) scale(1)} 50%{transform:translateX(-50%) scale(1.06)} 100%{transform:translateX(-50%) scale(1)} }
 
 /* ===== HERO ===== */
 .hero {
@@ -1147,6 +1187,19 @@ footer { background:var(--primary-dark); color:rgba(255,255,255,.6); padding:40p
   </div>
 </footer>
 
+<!-- FLOATING CART BUTTON -->
+<button class="floating-cart ripple-host" id="floatingCart" onclick="openCart()">
+  <div class="floating-cart-icon">
+    <i class="fa-solid fa-basket-shopping"></i>
+    <span class="floating-cart-badge" id="floatingCartBadge">0</span>
+  </div>
+  <div class="floating-cart-info">
+    <span class="floating-cart-label">Keranjang Belanja</span>
+    <span class="floating-cart-total" id="floatingCartTotal">Rp 0</span>
+  </div>
+  <i class="fa-solid fa-chevron-up" style="font-size:13px;opacity:.6;"></i>
+</button>
+
 <!-- CART OVERLAY + DRAWER -->
 <div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
 <div class="cart-drawer" id="cartDrawer">
@@ -1486,9 +1539,27 @@ function getCartCount()     { return Object.values(cart).reduce((s,i) => s + i.q
 // Update cart UI TANPA re-render semua produk
 function updateCartUI() {
   const count = getCartCount();
+  const total = getCartTotal();
+
+  // Header badge
   const badge = document.getElementById('cartBadge');
   badge.textContent = count;
   badge.classList.toggle('show', count > 0);
+
+  // Floating cart
+  const floatEl    = document.getElementById('floatingCart');
+  const floatBadge = document.getElementById('floatingCartBadge');
+  const floatTotal = document.getElementById('floatingCartTotal');
+  if (floatEl) {
+    floatBadge.textContent = count;
+    floatTotal.textContent  = formatRp(total);
+    floatEl.classList.toggle('visible', count > 0);
+    if (count > 0) {
+      floatEl.classList.remove('bump');
+      void floatEl.offsetWidth;
+      floatEl.classList.add('bump');
+    }
+  }
 
   const currentSet = new Set(Object.keys(cart).map(Number));
 
