@@ -1488,11 +1488,43 @@ function setupSearch() {
 let cart = {};
 let prevCartSet = new Set();
 
+// Parsing minimum grosir dari string seperti "1 karton (12 pcs)", "5 buah", "1 lusin"
+function parseGrosirMin(str) {
+  if (!str) return Infinity;
+  // Cari angka dalam kurung: (12 pcs) / (24 dos)
+  const parenMatch = str.match(/\((\d+)\s*(?:pcs|dos|buah)\)/i);
+  if (parenMatch) return parseInt(parenMatch[1]);
+  // "N buah" / "N pcs" di awal
+  const unitMatch = str.match(/^(\d+)\s*(?:buah|pcs)/i);
+  if (unitMatch) return parseInt(unitMatch[1]);
+  // "1 lusin" = 12
+  if (/lusin/i.test(str)) return 12;
+  // Ambil angka pertama sebagai fallback
+  const numMatch = str.match(/(\d+)/);
+  return numMatch ? parseInt(numMatch[1]) : Infinity;
+}
+
+// Hitung harga berdasarkan kondisi grosir
+function getItemPrice(item) {
+  return item.useGrosir ? item.product.harga_grosir : item.product.harga_satuan;
+}
+
+// Badge = jumlah JENIS produk berbeda (bukan total qty)
+function getCartCount() { return Object.keys(cart).length; }
+function getCartTotal() { return Object.values(cart).reduce((s,i) => s + getItemPrice(i)*i.qty, 0); }
+function getCartTotalQty() { return Object.values(cart).reduce((s,i) => s + i.qty, 0); }
+
 function addToCart(id) {
   const p = products.find(x => x.id === id);
   if (!p) return;
-  if (cart[id]) { cart[id].qty += 1; }
-  else           { cart[id] = { product:p, qty:1, useGrosir:false }; }
+  if (cart[id]) {
+    cart[id].qty += 1;
+    // auto-switch grosir jika melewati minimum
+    const min = parseGrosirMin(p.grosir_min);
+    if (cart[id].qty >= min) cart[id].useGrosir = true;
+  } else {
+    cart[id] = { product:p, qty:1, useGrosir:false };
+  }
   updateCartUI();
   // badge pulse
   const badge = document.getElementById('cartBadge');
@@ -1515,26 +1547,50 @@ function removeFromCart(id) {
   delete cart[id];
   updateCartUI();
 }
+
 function changeQty(id, delta) {
   if (!cart[id]) return;
-  cart[id].qty += delta;
-  if (cart[id].qty <= 0) delete cart[id];
+  const item = cart[id];
+  const min = parseGrosirMin(item.product.grosir_min);
+  item.qty += delta;
+  if (item.qty <= 0) {
+    delete cart[id];
+  } else {
+    // Jika sedang grosir dan user paksa kurangi di bawah minimum → turun ke satuan
+    if (item.qty < min) {
+      item.useGrosir = false;
+    }
+    // Jika qty naik mencapai/melewati minimum grosir → otomatis aktifkan grosir
+    if (item.qty >= min) {
+      item.useGrosir = true;
+    }
+  }
   updateCartUI();
 }
-function togglePriceType(id) {
+
+// Aktivasi harga grosir manual: langsung set qty ke minimum jika belum cukup
+function activateGrosir(id) {
   if (!cart[id]) return;
-  cart[id].useGrosir = !cart[id].useGrosir;
+  const item = cart[id];
+  const min = parseGrosirMin(item.product.grosir_min);
+  item.qty = Math.max(item.qty, min); // langsung set ke minimum grosir
+  item.useGrosir = true;
   updateCartUI();
 }
+
+// Kembali ke satuan: cukup ubah flag, qty tetap
+function activateSatuan(id) {
+  if (!cart[id]) return;
+  cart[id].useGrosir = false;
+  updateCartUI();
+}
+
 function clearCart() {
   if (!Object.keys(cart).length) return;
   if (!confirm('Kosongkan semua keranjang?')) return;
   cart = {};
   updateCartUI();
 }
-function getItemPrice(item) { return item.useGrosir ? item.product.harga_grosir : item.product.harga_satuan; }
-function getCartTotal()     { return Object.values(cart).reduce((s,i) => s + getItemPrice(i)*i.qty, 0); }
-function getCartCount()     { return Object.values(cart).reduce((s,i) => s + i.qty, 0); }
 
 // Update cart UI TANPA re-render semua produk
 function updateCartUI() {
@@ -1623,9 +1679,9 @@ function renderCartDrawer() {
           <div class="cart-item-name">${p.nama}</div>
           <div class="price-toggle">
             <button class="price-toggle-btn${!item.useGrosir?' active':''}"
-              onclick="cart[${p.id}].useGrosir=false;updateCartUI()">Satuan</button>
+              onclick="activateSatuan(${p.id})">Satuan</button>
             <button class="price-toggle-btn${item.useGrosir?' active':''}"
-              onclick="cart[${p.id}].useGrosir=true;updateCartUI()">Grosir</button>
+              onclick="activateGrosir(${p.id})">Grosir (min. ${p.grosir_min})</button>
           </div>
           <div class="cart-item-controls">
             <button class="qty-btn" onclick="changeQty(${p.id},-1)">−</button>
