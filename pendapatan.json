@@ -1,1 +1,19 @@
-[]
+[
+  {
+    "id": "sale_1778836745086",
+    "tanggal": "2026-05-15",
+    "produk_id": 1,
+    "produk_nama": "Minyak Goreng Minyak Kita 1L",
+    "jumlah": 2,
+    "satuan_type": "pcs",
+    "harga_jual": 21000,
+    "harga_modal": 16000,
+    "total_pendapatan": 42000,
+    "total_modal": 32000,
+    "keuntungan": 10000,
+    "tipe": "offline",
+    "order_id": null,
+    "catatan": "",
+    "created_at": "2026-05-15T09:19:05.086Z"
+  }
+]
