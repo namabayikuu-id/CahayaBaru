@@ -8,7 +8,10 @@
     "harga_grosir": 20000,
     "grosir_min": "12 botol",
     "kategori": "sembako",
-    "subkategori": "minyak-goreng"
+    "subkategori": "minyak-goreng",
+    "harga_kg": 0,
+    "harga_modal": 16000,
+    "harga_modal_kg": 0
   },
   {
     "id": 2,
