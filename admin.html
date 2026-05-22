@@ -400,6 +400,10 @@ tbody td { padding: 12px 16px; vertical-align: middle; }
         <i class="fa-solid fa-chart-line"></i> Penjualan
         <span class="badge" id="penjualanCountBadge" style="display:none;">0</span>
       </button>
+      <button class="nav-link" id="navPengeluaran" onclick="showView('pengeluaran')">
+        <i class="fa-solid fa-money-bill-transfer"></i> Pengeluaran
+        <span class="badge" id="pengeluaranCountBadge" style="display:none;">0</span>
+      </button>
       <div class="nav-section-label">Pengiriman</div>
       <button class="nav-link" id="navPesanan" onclick="showView('pesanan')">
         <i class="fa-solid fa-truck-fast"></i> Pesanan
@@ -637,6 +641,112 @@ tbody td { padding: 12px 16px; vertical-align: middle; }
                 </tr>
               </thead>
               <tbody id="penjualanTbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── PENGELUARAN VIEW ── -->
+      <div class="view" id="viewPengeluaran">
+        <!-- Summary mini cards -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;margin-bottom:20px;">
+          <div class="stat-card">
+            <div class="stat-icon red"><i class="fa-solid fa-money-bill-transfer"></i></div>
+            <div class="stat-info"><strong id="expSum_total" style="font-size:20px;">Rp 0</strong><span>Total Pengeluaran</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon blue"><i class="fa-solid fa-list-check"></i></div>
+            <div class="stat-info"><strong id="expSum_trx">0</strong><span>Jumlah Transaksi</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon purple"><i class="fa-solid fa-tags"></i></div>
+            <div class="stat-info"><strong id="expSum_kategori">0</strong><span>Kategori</span></div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon teal"><i class="fa-solid fa-calculator"></i></div>
+            <div class="stat-info"><strong id="expSum_avg" style="font-size:18px;">Rp 0</strong><span>Rata-rata/Transaksi</span></div>
+          </div>
+        </div>
+
+        <!-- Charts row -->
+        <div class="chart-section" style="margin-bottom:20px;">
+          <div class="chart-card">
+            <h4><i class="fa-solid fa-chart-pie" style="color:var(--danger);margin-right:6px;"></i>Pengeluaran per Kategori</h4>
+            <p class="chart-sub">Distribusi pengeluaran berdasarkan kategori bulan ini</p>
+            <div class="chart-canvas-wrap">
+              <canvas id="pieExpKategori"></canvas>
+              <div class="chart-center-label">
+                <strong id="centerExpKatVal">—</strong>
+                <small>Total</small>
+              </div>
+            </div>
+          </div>
+          <div class="chart-card">
+            <h4><i class="fa-solid fa-chart-bar" style="color:var(--primary);margin-right:6px;"></i>Tren Pengeluaran Harian</h4>
+            <p class="chart-sub">Pengeluaran per hari dalam bulan ini</p>
+            <div class="chart-canvas-wrap" style="height:220px;">
+              <canvas id="barExpHarian"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Arus Kas card -->
+        <div class="card" style="margin-bottom:20px;">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-scale-balanced" style="color:var(--accent);margin-right:6px;"></i> Arus Kas Bulan Ini</h3>
+            <input type="month" id="pengeluaranFilterMonth" onchange="renderPengeluaranView()" style="padding:8px 12px;border:2px solid var(--border);border-radius:8px;font-size:13px;font-family:'Nunito',sans-serif;outline:none;color:var(--text);background:var(--bg);">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1px;background:var(--border);">
+            <div style="background:var(--card);padding:20px 24px;text-align:center;">
+              <div style="font-size:11px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;"><i class="fa-solid fa-arrow-trend-up" style="color:var(--success);margin-right:4px;"></i>Pendapatan</div>
+              <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--success);font-weight:700;" id="arusKasPendapatan">Rp 0</div>
+            </div>
+            <div style="background:var(--card);padding:20px 24px;text-align:center;">
+              <div style="font-size:11px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;"><i class="fa-solid fa-arrow-trend-down" style="color:var(--danger);margin-right:4px;"></i>Pengeluaran</div>
+              <div style="font-family:'Playfair Display',serif;font-size:22px;color:var(--danger);font-weight:700;" id="arusKasPengeluaran">Rp 0</div>
+            </div>
+            <div style="background:var(--card);padding:20px 24px;text-align:center;">
+              <div style="font-size:11px;color:var(--text-muted);font-weight:700;text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;"><i class="fa-solid fa-wallet" style="color:var(--primary);margin-right:4px;"></i>Sisa Bersih</div>
+              <div style="font-family:'Playfair Display',serif;font-size:22px;font-weight:700;" id="arusKasSisa">Rp 0</div>
+              <div style="font-size:11px;margin-top:4px;font-weight:600;" id="arusKasSisaLabel"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Table card -->
+        <div class="card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-money-bill-transfer" style="color:var(--danger);margin-right:6px;"></i> Riwayat Pengeluaran</h3>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+              <select class="filter-select" id="filterExpKat" onchange="renderPengeluaranView()">
+                <option value="">Semua Kategori</option>
+                <option value="stok">Beli Stok/Barang</option>
+                <option value="operasional">Operasional</option>
+                <option value="gaji">Gaji/Upah</option>
+                <option value="utilitas">Utilitas (Listrik/Air)</option>
+                <option value="pemasaran">Pemasaran/Iklan</option>
+                <option value="transportasi">Transportasi</option>
+                <option value="peralatan">Peralatan</option>
+                <option value="lainnya">Lainnya</option>
+              </select>
+              <button class="topbar-btn btn-accent" onclick="openInputPengeluaran()">
+                <i class="fa-solid fa-plus"></i> Input Pengeluaran
+              </button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tanggal</th>
+                  <th>Keterangan</th>
+                  <th>Kategori</th>
+                  <th>Jumlah</th>
+                  <th>Catatan</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody id="pengeluaranTbody"></tbody>
             </table>
           </div>
         </div>
@@ -883,6 +993,91 @@ tbody td { padding: 12px 16px; vertical-align: middle; }
   </div>
 </div>
 
+<!-- ═══════════════ INPUT PENGELUARAN MODAL ═══════════════ -->
+<div class="modal-overlay" id="pengeluaranModal">
+  <div class="modal-box" style="max-width:520px;">
+    <div class="modal-header">
+      <h3><i class="fa-solid fa-money-bill-transfer" style="margin-right:8px;color:var(--danger);"></i>Input Pengeluaran</h3>
+      <button class="modal-close" onclick="closeInputPengeluaran()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Tanggal <span>*</span></label>
+          <input class="form-input" type="date" id="eTanggal">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Kategori <span>*</span></label>
+          <select class="form-select" id="eKategori">
+            <option value="">-- Pilih --</option>
+            <option value="stok">🛒 Beli Stok/Barang</option>
+            <option value="operasional">⚙️ Operasional</option>
+            <option value="gaji">👷 Gaji/Upah</option>
+            <option value="utilitas">💡 Utilitas (Listrik/Air)</option>
+            <option value="pemasaran">📣 Pemasaran/Iklan</option>
+            <option value="transportasi">🚚 Transportasi</option>
+            <option value="peralatan">🔧 Peralatan</option>
+            <option value="lainnya">📦 Lainnya</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Keterangan <span>*</span></label>
+        <input class="form-input" type="text" id="eKeterangan" placeholder="Contoh: Beli minyak goreng 10 karton">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label" style="color:var(--danger);">Jumlah (Rp) <span>*</span></label>
+          <input class="form-input" type="number" id="eJumlah" placeholder="150000" min="0" oninput="recalcExp()" style="border-color:rgba(220,53,69,.3);">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Metode Bayar</label>
+          <select class="form-select" id="eMetode">
+            <option value="tunai">💵 Tunai</option>
+            <option value="transfer">🏦 Transfer Bank</option>
+            <option value="qris">📱 QRIS</option>
+            <option value="kredit">💳 Kredit/Hutang</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Catatan</label>
+        <textarea class="form-textarea" id="eCatatan" placeholder="Catatan tambahan (opsional)..." style="min-height:64px;"></textarea>
+      </div>
+      <!-- Preview box -->
+      <div id="expPreviewBox" style="display:none;background:linear-gradient(135deg,rgba(220,53,69,.06),rgba(220,53,69,.02));border:1.5px solid rgba(220,53,69,.2);border-radius:12px;padding:14px 18px;margin-top:4px;">
+        <div style="display:flex;justify-content:space-between;font-size:13px;padding:3px 0;">
+          <span style="color:var(--text-muted);">Jumlah Pengeluaran</span>
+          <span style="font-weight:800;color:var(--danger);font-size:16px;" id="expPreviewJumlah">Rp 0</span>
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="topbar-btn btn-outline" onclick="closeInputPengeluaran()">Batal</button>
+      <button class="topbar-btn" style="background:var(--danger);color:#fff;" onclick="saveInputPengeluaran()">
+        <i class="fa-solid fa-floppy-disk"></i> Simpan Pengeluaran
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════ CONFIRM DELETE PENGELUARAN MODAL ═══════════════ -->
+<div class="modal-overlay" id="confirmExpModal">
+  <div class="modal-box" style="max-width:400px;">
+    <div class="modal-body" style="padding-top:32px;">
+      <div class="confirm-icon"><i class="fa-solid fa-trash-can"></i></div>
+      <div class="confirm-title">Hapus Pengeluaran?</div>
+      <div class="confirm-desc" id="confirmExpDesc">Data pengeluaran ini akan dihapus.</div>
+    </div>
+    <div class="modal-footer">
+      <button class="topbar-btn btn-outline" onclick="closeConfirmExp()">Batal</button>
+      <button class="topbar-btn" style="background:var(--danger);color:#fff;" onclick="confirmDeleteExp()">
+        <i class="fa-solid fa-trash-can"></i> Ya, Hapus
+      </button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════════ LAPORAN BULANAN MODAL ═══════════════ -->
 <div class="modal-overlay" id="laporanModal">
   <div class="modal-box" style="max-width:480px;">
@@ -1057,9 +1252,16 @@ let ghConfig = {};
 let currentSatuanType = 'pcs'; // 'pcs' or 'kg'
 let currentTipeJual = 'offline'; // 'offline' or 'online'
 
+// Pengeluaran state
+let pengeluaran = [];
+let pengeluaranFileSha = null;
+let pendingDeleteExpId = null;
+
 // Chart instances
 let pieRevenueChart = null;
 let pieChannelChart = null;
+let pieExpKategoriChart = null;
+let barExpHarianChart = null;
 
 const SUBCATS = {
   sembako: ['minyak-goreng','sabun','bumbu','minuman','snack','beras'],
@@ -1148,10 +1350,12 @@ async function initApp() {
   const monthStr = today.toISOString().slice(0, 7);
   document.getElementById('dashMonth').value = monthStr;
   document.getElementById('penjualanFilterMonth').value = monthStr;
+  document.getElementById('pengeluaranFilterMonth').value = monthStr;
   document.getElementById('laporanBulan').value = monthStr;
 
   await loadFromGitHub();
   await loadPendapatan();
+  await loadPengeluaran();
   await loadLaporan();
   updateDashboardFinancials();
 }
@@ -1161,10 +1365,11 @@ async function initApp() {
 // ═══════════════════════════════════════════════
 function showView(name) {
   const pageTitles = {
-    dashboard: 'Dashboard',
-    products:  'Daftar Produk',
-    penjualan: 'Penjualan',
-    pesanan:   'Pesanan & Pengiriman',
+    dashboard:    'Dashboard',
+    products:     'Daftar Produk',
+    penjualan:    'Penjualan',
+    pengeluaran:  'Pengeluaran',
+    pesanan:      'Pesanan & Pengiriman',
   };
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
   document.querySelectorAll('.nav-link[id^="nav"]').forEach(l => l.classList.remove('active'));
@@ -1176,6 +1381,7 @@ function showView(name) {
   closeSidebar();
   if (name === 'pesanan') loadActiveOrders();
   if (name === 'penjualan') renderPenjualanView();
+  if (name === 'pengeluaran') renderPengeluaranView();
   if (name === 'dashboard') { updateDashboardFinancials(); drawPieCharts(); }
 }
 
@@ -1366,6 +1572,67 @@ async function saveLaporanToGitHub() {
     showToast('Laporan keuangan disimpan ke Financial-statement.json! 🎉', 'success');
   } catch (err) {
     showToast('Gagal simpan laporan: ' + err.message, 'error');
+  } finally {
+    closeSaving();
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  GITHUB — PENGELUARAN
+// ═══════════════════════════════════════════════
+function getPengeluaranPath() {
+  const cfg = getGhConfig();
+  const dir = cfg.filePath && cfg.filePath.includes('/')
+    ? cfg.filePath.substring(0, cfg.filePath.lastIndexOf('/') + 1)
+    : '';
+  return dir + 'pengeluaran.json';
+}
+
+async function loadPengeluaran(manual = false) {
+  const cfg = getGhConfig();
+  if (!cfg.owner || !cfg.repo) return;
+  try {
+    const res = await ghProxy('GET',
+      `repos/${cfg.owner}/${cfg.repo}/contents/${getPengeluaranPath()}`,
+      null, cfg.branch);
+    if (!res.ok) {
+      if (res.status === 404) { pengeluaran = []; pengeluaranFileSha = null; return; }
+      throw new Error(`HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    pengeluaranFileSha = data.sha;
+    const json = atob(data.content.replace(/\n/g, ''));
+    pengeluaran = JSON.parse(json);
+    if (manual) showToast('Data pengeluaran dimuat!', 'success');
+  } catch (err) {
+    pengeluaran = [];
+    if (manual) showToast('Gagal muat pengeluaran: ' + err.message, 'error');
+  }
+}
+
+async function savePengeluaranToGitHub() {
+  const cfg = getGhConfig();
+  if (!cfg.owner || !cfg.repo) return;
+  setSavingMsg('Menyimpan data pengeluaran...');
+  openSaving();
+  try {
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(pengeluaran, null, 2))));
+    const body = {
+      message: `Update pengeluaran.json — ${new Date().toLocaleString('id-ID')}`,
+      content, branch: cfg.branch,
+    };
+    if (pengeluaranFileSha) body.sha = pengeluaranFileSha;
+    const res = await ghProxy('PUT',
+      `repos/${cfg.owner}/${cfg.repo}/contents/${getPengeluaranPath()}`, body);
+    if (!res.ok) {
+      const errData = await res.json();
+      throw new Error(errData.message || `HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    pengeluaranFileSha = data.content.sha;
+    showToast('Data pengeluaran disimpan ke GitHub!', 'success');
+  } catch (err) {
+    showToast('Gagal simpan pengeluaran: ' + err.message, 'error');
   } finally {
     closeSaving();
   }
