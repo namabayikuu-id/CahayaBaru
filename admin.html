@@ -487,8 +487,12 @@ tbody td { padding: 12px 16px; vertical-align: middle; }
             <div class="stat-info"><strong id="finModal" style="font-size:20px;">Rp 0</strong><span>Total Modal/HPP</span></div>
           </div>
           <div class="stat-card">
+            <div class="stat-icon purple"><i class="fa-solid fa-money-bill-transfer"></i></div>
+            <div class="stat-info"><strong id="finPengeluaran" style="font-size:20px;">Rp 0</strong><span>Pengeluaran Ops.</span></div>
+          </div>
+          <div class="stat-card">
             <div class="stat-icon teal"><i class="fa-solid fa-trending-up"></i></div>
-            <div class="stat-info"><strong id="finKeuntungan" style="font-size:20px;">Rp 0</strong><span id="finKeuntunganLabel">Keuntungan</span></div>
+            <div class="stat-info"><strong id="finKeuntungan" style="font-size:20px;">Rp 0</strong><span id="finKeuntunganLabel">Keuntungan Bersih</span></div>
           </div>
           <div class="stat-card">
             <div class="stat-icon blue"><i class="fa-solid fa-cart-shopping"></i></div>
@@ -497,7 +501,7 @@ tbody td { padding: 12px 16px; vertical-align: middle; }
         </div>
 
         <!-- Pie Charts -->
-        <div class="chart-section">
+        <div class="chart-section" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr));">
           <div class="chart-card">
             <h4><i class="fa-solid fa-chart-pie" style="color:var(--primary);margin-right:6px;"></i>Komposisi Pendapatan</h4>
             <p class="chart-sub">Modal/HPP vs Keuntungan bulan ini</p>
@@ -517,6 +521,17 @@ tbody td { padding: 12px 16px; vertical-align: middle; }
               <div class="chart-center-label" id="centerChannel">
                 <strong id="centerChanVal">—</strong>
                 <small>Transaksi</small>
+              </div>
+            </div>
+          </div>
+          <div class="chart-card">
+            <h4><i class="fa-solid fa-scale-balanced" style="color:var(--danger);margin-right:6px;"></i>Arus Kas</h4>
+            <p class="chart-sub">Pendapatan vs total pengeluaran bulan ini</p>
+            <div class="chart-canvas-wrap">
+              <canvas id="pieCashflow"></canvas>
+              <div class="chart-center-label" id="centerCashflow">
+                <strong id="centerCashVal">—</strong>
+                <small>Sisa Bersih</small>
               </div>
             </div>
           </div>
@@ -1093,12 +1108,14 @@ tbody td { padding: 12px 16px; vertical-align: middle; }
       <div class="laporan-preview" id="laporanPreview">
         <div class="lp-row"><span class="lp-label">Total Pendapatan</span><span class="lp-val" id="lpPendapatan">Rp 0</span></div>
         <div class="lp-row"><span class="lp-label">Total Modal/HPP</span><span class="lp-val" id="lpModal">Rp 0</span></div>
+        <div class="lp-row"><span class="lp-label" style="color:var(--danger);">Total Pengeluaran Ops.</span><span class="lp-val" style="color:var(--danger);" id="lpPengeluaran">Rp 0</span></div>
         <hr class="lp-divider">
-        <div class="lp-total"><span class="lp-label" id="lpProfitLabel">Keuntungan</span><span id="lpProfit" style="font-weight:800;">Rp 0</span></div>
+        <div class="lp-total"><span class="lp-label" id="lpProfitLabel">Keuntungan Bersih</span><span id="lpProfit" style="font-weight:800;">Rp 0</span></div>
         <hr class="lp-divider">
         <div class="lp-row"><span class="lp-label">Transaksi Online</span><span class="lp-val" id="lpOnline">0</span></div>
         <div class="lp-row"><span class="lp-label">Transaksi Offline</span><span class="lp-val" id="lpOffline">0</span></div>
         <div class="lp-row"><span class="lp-label">Total Transaksi</span><span class="lp-val" id="lpTrx">0</span></div>
+        <div class="lp-row"><span class="lp-label">Jumlah Pengeluaran</span><span class="lp-val" id="lpJmlPengeluaran">0 item</span></div>
       </div>
       <div class="form-hint" style="background:rgba(232,160,32,.1);border:1px solid rgba(232,160,32,.3);border-radius:8px;padding:10px 14px;margin-top:8px;">
         <i class="fa-solid fa-circle-info" style="color:var(--accent);margin-right:6px;"></i>
@@ -1262,6 +1279,7 @@ let pieRevenueChart = null;
 let pieChannelChart = null;
 let pieExpKategoriChart = null;
 let barExpHarianChart = null;
+let pieCashflowChart = null;
 
 const SUBCATS = {
   sembako: ['minyak-goreng','sabun','bumbu','minuman','snack','beras'],
@@ -1769,21 +1787,27 @@ function updateDashboardFinancials() {
   const month = document.getElementById('dashMonth')?.value || new Date().toISOString().slice(0,7);
   const sales = getSalesForMonth(month);
   const t = computeMonthlyTotals(sales);
+  const expMonth = getExpForMonth(month);
+  const totalExp = expMonth.reduce((s, e) => s + (e.jumlah || 0), 0);
 
   document.getElementById('finPendapatan').textContent = formatRp(t.total_pendapatan);
   document.getElementById('finModal').textContent = formatRp(t.total_modal);
   document.getElementById('finTransaksi').textContent = t.transaksi;
+  const finExpEl = document.getElementById('finPengeluaran');
+  if (finExpEl) finExpEl.textContent = formatRp(totalExp);
 
+  // Keuntungan bersih = pendapatan - modal - pengeluaran operasional
+  const keuntunganBersih = t.total_pendapatan - t.total_modal - totalExp;
   const kEl = document.getElementById('finKeuntungan');
   const kLbl = document.getElementById('finKeuntunganLabel');
-  if (t.keuntungan >= 0) {
-    kEl.textContent = formatRp(t.keuntungan);
+  if (keuntunganBersih >= 0) {
+    kEl.textContent = formatRp(keuntunganBersih);
     kEl.className = 'text-success';
-    kLbl.textContent = 'Keuntungan';
+    kLbl.textContent = 'Keuntungan Bersih';
   } else {
-    kEl.textContent = formatRp(Math.abs(t.keuntungan));
+    kEl.textContent = formatRp(Math.abs(keuntunganBersih));
     kEl.className = 'text-danger';
-    kLbl.textContent = 'Rugi';
+    kLbl.textContent = 'Rugi Bersih';
   }
 
   // Update penjualan count badge
@@ -1873,6 +1897,44 @@ function drawPieCharts() {
 
     const centerChan = document.getElementById('centerChanVal');
     if (centerChan) centerChan.textContent = t.transaksi;
+  }
+
+  // ─── Pie 3: Cashflow (Pendapatan vs total pengeluaran) ───
+  const ctxCash = document.getElementById('pieCashflow');
+  if (ctxCash) {
+    if (pieCashflowChart) { pieCashflowChart.destroy(); pieCashflowChart = null; }
+    const expMonth = getExpForMonth(month);
+    const totalExp = expMonth.reduce((s, e) => s + (e.jumlah || 0), 0);
+    const sisa = t.total_pendapatan - totalExp;
+    let cfLabels, cfData, cfColors;
+    if (t.total_pendapatan === 0 && totalExp === 0) {
+      cfLabels = ['Belum ada data'];
+      cfData = [1];
+      cfColors = ['#e5e7eb'];
+    } else if (sisa >= 0) {
+      cfLabels = ['Pengeluaran', 'Sisa Bersih'];
+      cfData = [totalExp, sisa];
+      cfColors = ['#dc3545', '#198754'];
+    } else {
+      cfLabels = ['Pendapatan', 'Defisit'];
+      cfData = [t.total_pendapatan, Math.abs(sisa)];
+      cfColors = ['#2B5F3A', '#dc3545'];
+    }
+    pieCashflowChart = new Chart(ctxCash, {
+      type: 'doughnut',
+      data: { labels: cfLabels, datasets: [{ data: cfData, backgroundColor: cfColors, borderWidth: 2, borderColor: '#fff', hoverBorderWidth: 3 }] },
+      options: {
+        cutout: '65%',
+        plugins: {
+          legend: { position: 'bottom', labels: { font: { size: 12, family: 'Nunito' }, padding: 14, usePointStyle: true } },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${formatRp(ctx.parsed)}` } }
+        },
+        animation: { animateRotate: true, duration: 600 }
+      }
+    });
+    const centerCashEl = document.getElementById('centerCashVal');
+    if (centerCashEl) centerCashEl.textContent = formatRp(Math.abs(sisa)).replace('Rp ', 'Rp
+');
   }
 }
 
@@ -2122,6 +2184,245 @@ async function confirmDeleteSale() {
 }
 
 // ═══════════════════════════════════════════════
+//  PENGELUARAN — RENDER VIEW
+// ═══════════════════════════════════════════════
+const EXP_KAT_LABELS = {
+  stok: '🛒 Beli Stok/Barang',
+  operasional: '⚙️ Operasional',
+  gaji: '👷 Gaji/Upah',
+  utilitas: '💡 Utilitas',
+  pemasaran: '📣 Pemasaran/Iklan',
+  transportasi: '🚚 Transportasi',
+  peralatan: '🔧 Peralatan',
+  lainnya: '📦 Lainnya',
+};
+const EXP_KAT_COLORS = ['#dc3545','#E8A020','#6f42c1','#0dcaf0','#20b2aa','#fd7e14','#198754','#6c757d'];
+
+function getExpForMonth(monthStr) {
+  return pengeluaran.filter(e => e.tanggal && e.tanggal.startsWith(monthStr));
+}
+
+function renderPengeluaranView() {
+  const month = document.getElementById('pengeluaranFilterMonth')?.value || new Date().toISOString().slice(0,7);
+  const filterKat = document.getElementById('filterExpKat')?.value || '';
+  const allExp = getExpForMonth(month);
+  const filteredExp = filterKat ? allExp.filter(e => e.kategori === filterKat) : allExp;
+
+  const totalExp = allExp.reduce((s, e) => s + (e.jumlah || 0), 0);
+  const kats = new Set(allExp.map(e => e.kategori));
+  const avg = allExp.length ? totalExp / allExp.length : 0;
+
+  document.getElementById('expSum_total').textContent = formatRp(totalExp);
+  document.getElementById('expSum_trx').textContent = allExp.length;
+  document.getElementById('expSum_kategori').textContent = kats.size;
+  document.getElementById('expSum_avg').textContent = formatRp(avg);
+
+  // Arus kas
+  const totalPend = getSalesForMonth(month).reduce((s, x) => s + (x.total_pendapatan || 0), 0);
+  document.getElementById('arusKasPendapatan').textContent = formatRp(totalPend);
+  document.getElementById('arusKasPengeluaran').textContent = formatRp(totalExp);
+  const sisa = totalPend - totalExp;
+  const sisaEl = document.getElementById('arusKasSisa');
+  const sisaLbl = document.getElementById('arusKasSisaLabel');
+  sisaEl.textContent = formatRp(Math.abs(sisa));
+  if (sisa >= 0) {
+    sisaEl.style.color = 'var(--success)';
+    sisaLbl.textContent = 'Surplus ✅';
+    sisaLbl.style.color = 'var(--success)';
+  } else {
+    sisaEl.style.color = 'var(--danger)';
+    sisaLbl.textContent = 'Defisit ⚠️';
+    sisaLbl.style.color = 'var(--danger)';
+  }
+
+  // Draw charts
+  drawExpCharts(month, allExp);
+
+  // Render table
+  const tbody = document.getElementById('pengeluaranTbody');
+  if (!filteredExp.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="table-empty"><i class="fa-solid fa-money-bill-transfer"></i>Belum ada pengeluaran${filterKat ? ' untuk kategori ini' : ' bulan ini'}. Klik "Input Pengeluaran".</div></td></tr>`;
+    return;
+  }
+  const sorted = [...filteredExp].sort((a,b) => b.tanggal.localeCompare(a.tanggal));
+  tbody.innerHTML = sorted.map(e => `
+    <tr>
+      <td style="font-size:12px;white-space:nowrap;">${e.tanggal}</td>
+      <td><div class="td-name" style="font-size:13px;">${e.keterangan}</div></td>
+      <td>
+        <span class="badge-cat" style="background:rgba(220,53,69,.1);color:var(--danger);font-size:11px;">
+          ${EXP_KAT_LABELS[e.kategori] || e.kategori}
+        </span>
+      </td>
+      <td><span style="font-weight:800;color:var(--danger);font-size:13.5px;">${formatRp(e.jumlah)}</span></td>
+      <td style="font-size:12px;color:var(--text-muted);">${e.catatan || '—'}</td>
+      <td>
+        <button class="action-btn action-delete" onclick="openConfirmDeleteExp('${e.id}')" title="Hapus">
+          <i class="fa-solid fa-trash-can"></i>
+        </button>
+      </td>
+    </tr>
+  `).join('');
+
+  // Update badge
+  const badge = document.getElementById('pengeluaranCountBadge');
+  if (pengeluaran.length > 0) { badge.style.display=''; badge.textContent = pengeluaran.length; }
+  else badge.style.display = 'none';
+}
+
+function drawExpCharts(month, allExp) {
+  // ─── Pie: per kategori ───
+  const ctxKat = document.getElementById('pieExpKategori');
+  if (ctxKat) {
+    if (pieExpKategoriChart) { pieExpKategoriChart.destroy(); pieExpKategoriChart = null; }
+    const katTotals = {};
+    allExp.forEach(e => { katTotals[e.kategori] = (katTotals[e.kategori] || 0) + (e.jumlah || 0); });
+    const entries = Object.entries(katTotals).sort((a,b) => b[1] - a[1]);
+    const hasData = entries.length > 0;
+    const labels = hasData ? entries.map(([k]) => EXP_KAT_LABELS[k] || k) : ['Belum ada data'];
+    const dataVals = hasData ? entries.map(([,v]) => v) : [1];
+    const colors = hasData ? entries.map((_, i) => EXP_KAT_COLORS[i % EXP_KAT_COLORS.length]) : ['#e5e7eb'];
+    pieExpKategoriChart = new Chart(ctxKat, {
+      type: 'doughnut',
+      data: { labels, datasets: [{ data: dataVals, backgroundColor: colors, borderWidth: 2, borderColor: '#fff', hoverBorderWidth: 3 }] },
+      options: {
+        cutout: '62%',
+        plugins: {
+          legend: { position: 'bottom', labels: { font: { size: 11, family: 'Nunito' }, padding: 10, usePointStyle: true } },
+          tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${formatRp(ctx.parsed)}` } }
+        },
+        animation: { animateRotate: true, duration: 600 }
+      }
+    });
+    const total = allExp.reduce((s,e) => s+(e.jumlah||0), 0);
+    document.getElementById('centerExpKatVal').textContent = formatRp(total).replace('Rp ','Rp\n');
+  }
+
+  // ─── Bar: harian ───
+  const ctxBar = document.getElementById('barExpHarian');
+  if (ctxBar) {
+    if (barExpHarianChart) { barExpHarianChart.destroy(); barExpHarianChart = null; }
+    const daysInMonth = new Date(month.split('-')[0], month.split('-')[1], 0).getDate();
+    const dayTotals = Array(daysInMonth).fill(0);
+    allExp.forEach(e => {
+      const d = parseInt((e.tanggal||'').split('-')[2] || '0') - 1;
+      if (d >= 0 && d < daysInMonth) dayTotals[d] += (e.jumlah || 0);
+    });
+    const dayLabels = Array.from({length: daysInMonth}, (_, i) => i+1);
+    barExpHarianChart = new Chart(ctxBar, {
+      type: 'bar',
+      data: {
+        labels: dayLabels,
+        datasets: [{
+          label: 'Pengeluaran',
+          data: dayTotals,
+          backgroundColor: 'rgba(220,53,69,.65)',
+          borderColor: 'rgba(220,53,69,1)',
+          borderWidth: 1,
+          borderRadius: 4,
+        }]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { callbacks: { label: ctx => ` ${formatRp(ctx.parsed.y)}` } }
+        },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 10, family: 'Nunito' } } },
+          y: { grid: { color: 'rgba(0,0,0,.06)' }, ticks: { font: { size: 10, family: 'Nunito' }, callback: v => v === 0 ? '0' : (v>=1000000 ? (v/1000000).toFixed(1)+'jt' : (v/1000).toFixed(0)+'rb') } }
+        }
+      }
+    });
+  }
+}
+
+// ═══════════════════════════════════════════════
+//  PENGELUARAN — INPUT MODAL
+// ═══════════════════════════════════════════════
+function openInputPengeluaran() {
+  const today = new Date().toISOString().slice(0,10);
+  document.getElementById('eTanggal').value = today;
+  document.getElementById('eKategori').value = '';
+  document.getElementById('eKeterangan').value = '';
+  document.getElementById('eJumlah').value = '';
+  document.getElementById('eMetode').value = 'tunai';
+  document.getElementById('eCatatan').value = '';
+  document.getElementById('expPreviewBox').style.display = 'none';
+  document.getElementById('pengeluaranModal').classList.add('open');
+}
+
+function closeInputPengeluaran() {
+  document.getElementById('pengeluaranModal').classList.remove('open');
+}
+
+function recalcExp() {
+  const jumlah = parseFloat(document.getElementById('eJumlah').value) || 0;
+  if (jumlah > 0) {
+    document.getElementById('expPreviewBox').style.display = 'block';
+    document.getElementById('expPreviewJumlah').textContent = formatRp(jumlah);
+  } else {
+    document.getElementById('expPreviewBox').style.display = 'none';
+  }
+}
+
+async function saveInputPengeluaran() {
+  const tanggal = document.getElementById('eTanggal').value;
+  const kategori = document.getElementById('eKategori').value;
+  const keterangan = document.getElementById('eKeterangan').value.trim();
+  const jumlah = parseFloat(document.getElementById('eJumlah').value);
+  const metode = document.getElementById('eMetode').value;
+  const catatan = document.getElementById('eCatatan').value.trim();
+
+  if (!tanggal || !kategori || !keterangan || !jumlah || jumlah <= 0) {
+    showToast('Lengkapi semua field yang wajib diisi!', 'warning');
+    return;
+  }
+
+  const newExp = {
+    id: `exp_${Date.now()}`,
+    tanggal,
+    kategori,
+    keterangan,
+    jumlah,
+    metode,
+    catatan,
+    created_at: new Date().toISOString()
+  };
+
+  pengeluaran.push(newExp);
+  closeInputPengeluaran();
+  await savePengeluaranToGitHub();
+  renderPengeluaranView();
+  showToast(`Pengeluaran "${keterangan}" berhasil disimpan!`, 'success');
+}
+
+// ═══════════════════════════════════════════════
+//  PENGELUARAN — DELETE
+// ═══════════════════════════════════════════════
+function openConfirmDeleteExp(id) {
+  pendingDeleteExpId = id;
+  const e = pengeluaran.find(x => x.id === id);
+  document.getElementById('confirmExpDesc').textContent =
+    `Pengeluaran "${e?.keterangan}" (${formatRp(e?.jumlah)}) akan dihapus.`;
+  document.getElementById('confirmExpModal').classList.add('open');
+}
+function closeConfirmExp() {
+  document.getElementById('confirmExpModal').classList.remove('open');
+  pendingDeleteExpId = null;
+}
+async function confirmDeleteExp() {
+  if (!pendingDeleteExpId) return;
+  pengeluaran = pengeluaran.filter(e => e.id !== pendingDeleteExpId);
+  closeConfirmExp();
+  await savePengeluaranToGitHub();
+  renderPengeluaranView();
+  showToast('Data pengeluaran dihapus.', 'warning');
+}
+
+
+
+// ═══════════════════════════════════════════════
 //  LAPORAN BULANAN
 // ═══════════════════════════════════════════════
 function openLaporanBulananModal() {
@@ -2139,23 +2440,30 @@ document.addEventListener('DOMContentLoaded', () => {
 function previewLaporan(month) {
   const sales = getSalesForMonth(month);
   const t = computeMonthlyTotals(sales);
+  const expMonth = getExpForMonth(month);
+  const totalExp = expMonth.reduce((s, e) => s + (e.jumlah || 0), 0);
+  const keuntunganBersih = t.total_pendapatan - t.total_modal - totalExp;
 
   document.getElementById('lpPendapatan').textContent = formatRp(t.total_pendapatan);
   document.getElementById('lpModal').textContent = formatRp(t.total_modal);
   document.getElementById('lpTrx').textContent = t.transaksi;
   document.getElementById('lpOnline').textContent = t.online;
   document.getElementById('lpOffline').textContent = t.offline;
+  const lpPengeluaranEl = document.getElementById('lpPengeluaran');
+  if (lpPengeluaranEl) lpPengeluaranEl.textContent = formatRp(totalExp);
+  const lpJmlPengeluaranEl = document.getElementById('lpJmlPengeluaran');
+  if (lpJmlPengeluaranEl) lpJmlPengeluaranEl.textContent = expMonth.length + ' item';
 
   const profEl = document.getElementById('lpProfit');
   const profLbl = document.getElementById('lpProfitLabel');
-  if (t.keuntungan >= 0) {
-    profEl.textContent = formatRp(t.keuntungan);
+  if (keuntunganBersih >= 0) {
+    profEl.textContent = formatRp(keuntunganBersih);
     profEl.style.color = 'var(--success)';
     profLbl.textContent = 'Keuntungan Bersih';
   } else {
-    profEl.textContent = formatRp(Math.abs(t.keuntungan));
+    profEl.textContent = formatRp(Math.abs(keuntunganBersih));
     profEl.style.color = 'var(--danger)';
-    profLbl.textContent = 'Kerugian';
+    profLbl.textContent = 'Kerugian Bersih';
   }
 }
 
@@ -2173,19 +2481,25 @@ async function confirmSaveLaporan() {
   const monthDate = new Date(month + '-01');
   const label = monthDate.toLocaleDateString('id-ID', { month: 'long', year: 'numeric' });
 
+  const expMonth = getExpForMonth(month);
+  const totalExp = expMonth.reduce((s, e) => s + (e.jumlah || 0), 0);
+  const keuntunganBersih = t.total_pendapatan - t.total_modal - totalExp;
+
   const laporanEntry = {
     bulan: month,
     label,
     dibuat_at: new Date().toISOString(),
     total_pendapatan: t.total_pendapatan,
     total_modal: t.total_modal,
-    total_keuntungan: t.keuntungan,
+    total_pengeluaran: totalExp,
+    total_keuntungan: keuntunganBersih,
     total_transaksi: t.transaksi,
     online_transaksi: t.online,
     offline_transaksi: t.offline,
     online_pendapatan: t.online_revenue,
     offline_pendapatan: t.offline_revenue,
-    detail: sales
+    detail: sales,
+    pengeluaran_detail: expMonth
   };
 
   // Replace or add
